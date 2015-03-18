@@ -9,16 +9,13 @@ class UpdateRestraintDbTest(TestCase):
     def test_full_update_scenario(self):
         register_restraint_config({
             'perm_sets': ['global', 'restricted'],
-            'perms': [{
-                'name': 'can_edit_stuff',
-                'levels': [{
-                    'name': 'all_stuff',
-                }, {
-                    'name': 'some_stuff',
-                }],
-            }, {
-                'name': 'can_view_stuff',
-            }]
+            'perms': {
+                'can_edit_stuff': {
+                    'all_stuff': None,
+                    'some_stuff': None,
+                },
+                'can_view_stuff': {}
+            }
         })
         update_restraint_db()
 

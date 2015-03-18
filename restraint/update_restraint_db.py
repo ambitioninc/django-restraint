@@ -26,7 +26,7 @@ def update_perms():
     Updates Perm models in the DB based on the restraint config.
     """
     perms = get_restraint_config()['perms']
-    sync(Perm.objects.all(), [Perm(name=perm['name']) for perm in perms], ['name'])
+    sync(Perm.objects.all(), [Perm(name=perm) for perm in perms], ['name'])
 
 
 def update_perm_levels():
@@ -35,8 +35,12 @@ def update_perm_levels():
     """
     perms = get_restraint_config()['perms']
     perm_objs = {p.name: p for p in Perm.objects.all()}
-    sync(PermLevel.objects.all(), [
-        PermLevel(perm=perm_objs[perm['name']], name=perm_level['name'])
-        for perm in perms
-        for perm_level in perm.get('levels', [{'name': ''}])
-    ], ['name', 'perm'])
+    perm_levels = []
+    for perm, levels in perms.items():
+        if levels:
+            for l in levels:
+                perm_levels.append(PermLevel(perm=perm_objs[perm], name=l))
+        else:
+            perm_levels.append(PermLevel(perm=perm_objs[perm], name=''))
+
+    sync(PermLevel.objects.all(), perm_levels, ['name', 'perm'])
