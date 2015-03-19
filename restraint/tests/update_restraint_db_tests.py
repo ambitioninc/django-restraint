@@ -27,6 +27,7 @@ class UpdateRestraintDbTest(TestCase):
             }
         })
         update_restraint_db()
+        update_restraint_db()
 
         self.assertEquals(
             set(PermSet.objects.values_list('name', flat=True)), set(['global', 'restricted']))
