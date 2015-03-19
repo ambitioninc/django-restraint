@@ -1,4 +1,4 @@
-from collection import defaultdict
+from collections import defaultdict
 
 from restraint.models import PermAccess
 
@@ -8,6 +8,7 @@ RESTRAINT_CONFIG = {}
 
 
 def register_restraint_config(restraint_config):
+    RESTRAINT_CONFIG.clear()
     RESTRAINT_CONFIG.update(restraint_config)
 
 
