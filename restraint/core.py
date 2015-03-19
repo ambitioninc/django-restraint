@@ -30,9 +30,11 @@ def get_perms(account, which_perms=None):
     if which_perms:
         perm_access = perm_access.filter(perm_levels__perm__name__in=which_perms)
 
-    perms = defaultdict(lambda: defaultdict(list))
+    perms = defaultdict(dict)
     for p in perm_access:
         for l in p.perm_levels.all():
-            perms[l.perm.name][l.name].append(config['perms'][l.perm.name][l.name])
+            perms[l.perm.name].update({
+                l.name: config['perms'][l.perm.name].get(l.name)
+            })
 
     return perms

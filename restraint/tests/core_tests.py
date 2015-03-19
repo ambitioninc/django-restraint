@@ -1,6 +1,9 @@
+from django.contrib.auth.models import User
 from django.test import SimpleTestCase, TestCase
+from django_dynamic_fixture import G
 
 from restraint import core
+from restraint.update_restraint_db import update_restraint_db
 
 
 class TestRegisterRestraintConfig(SimpleTestCase):
@@ -37,5 +40,30 @@ class TestGetPerms(TestCase):
                     'some_stuff': None,
                 },
                 'can_view_stuff': {}
+            },
+            'default_access': {
+                'super': {
+                    'can_edit_stuff': ['all_stuff', 'some_stuff'],
+                    'can_view_stuff': [],
+                },
+                'individual': {
+                    'can_edit_stuff': ['some_stuff'],
+                }
             }
         }
+        core.register_restraint_config(config)
+        update_restraint_db()
+
+        # Make a user that is a superuser and verify they get all of the
+        # super user perms
+        u = G(User, is_superuser=True)
+        perms = core.get_perms(u)
+        self.assertEquals(perms, {
+            'can_view_stuff': {
+                '': None,
+            },
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        })
