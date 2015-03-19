@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from restraint.models import PermAccess
+from restraint.models import PermLevel
 
 
 # A global variable for holding the configuration of django restraint
@@ -26,15 +26,16 @@ def get_perms(account, which_perms=None):
     """
     config = get_restraint_config()
     perm_set_names = config['perm_set_getter'](account)
-    perm_access = PermAccess.objects.filter(perm_set__name__in=perm_set_names).prefetch_related('perm_levels__perm')
+    perm_levels = PermLevel.objects.filter(permaccess__perm_set__name__in=perm_set_names).select_related('perm')
     if which_perms:
-        perm_access = perm_access.filter(perm_levels__perm__name__in=which_perms)
+        # Note that this doesn't completely filter out the permission levels that might have perms different
+        # than those in which_perms. Django 1.7 has the abilty to do better filtering on prefetched object
+        perm_levels = perm_levels.filter(perm__name__in=which_perms)
 
     perms = defaultdict(dict)
-    for p in perm_access:
-        for l in p.perm_levels.all():
-            perms[l.perm.name].update({
-                l.name: config['perms'][l.perm.name].get(l.name)
-            })
+    for l in perm_levels:
+        perms[l.perm.name].update({
+            l.name: config['perms'][l.perm.name].get(l.name)
+        })
 
     return perms

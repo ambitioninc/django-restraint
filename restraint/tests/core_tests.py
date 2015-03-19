@@ -67,3 +67,44 @@ class TestGetPerms(TestCase):
                 'some_stuff': None,
             }
         })
+
+    def test_get_some_perms(self):
+        def perm_set_getter(u):
+            perm_sets = ['individual']
+            if u.is_superuser:
+                perm_sets.append('super')
+            return perm_sets
+
+        config = {
+            'perm_set_getter': perm_set_getter,
+            'perm_sets': ['super', 'individual'],
+            'perms': {
+                'can_edit_stuff': {
+                    'all_stuff': None,
+                    'some_stuff': None,
+                },
+                'can_view_stuff': {}
+            },
+            'default_access': {
+                'super': {
+                    'can_edit_stuff': ['all_stuff', 'some_stuff'],
+                    'can_view_stuff': [],
+                },
+                'individual': {
+                    'can_edit_stuff': ['some_stuff'],
+                }
+            }
+        }
+        core.register_restraint_config(config)
+        update_restraint_db()
+
+        # Make a user that is a superuser and verify they get all of the
+        # super user perms
+        u = G(User, is_superuser=True)
+        perms = core.get_perms(u, ['can_edit_stuff'])
+        self.assertEquals(perms, {
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        })
