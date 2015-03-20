@@ -1,4 +1,5 @@
 from collections import defaultdict
+from itertools import chain
 
 from restraint.models import PermLevel
 
@@ -53,3 +54,17 @@ class Restraint(object):
         true if that perm exists for any level.
         """
         return perm in self._perms and level in self._perms[perm] if level else perm in self._perms
+
+    def filter_qset(self, qset, perm):
+        """
+        Given a permission, filter the queryset by its levels.
+        """
+        if not self.has_perm(perm):
+            # If the user doesnt have the perm, return no data
+            return qset.none()
+        elif None in self._perms[perm].values():
+            # If any levels are none, return the full queryset
+            return qset
+        else:
+            # Filter the queryset by the union of all filters
+            return qset.filter(id__in=set(chain(*[l(self.account) for l in self._perms[perm]])))
