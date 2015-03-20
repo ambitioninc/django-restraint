@@ -1,13 +1,13 @@
 .. _ref-restraint:
 
-Code documentation
+Code Documentation
 ==================
 
 restraint
-------------------
+---------
 
 .. automodule:: restraint
-.. autoclass:: restraint.restraint
+.. autoclass:: restraint.Restraint
     :members:
 
     .. automethod:: __init__

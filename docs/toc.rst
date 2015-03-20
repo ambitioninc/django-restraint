@@ -6,6 +6,8 @@ Table of Contents
 
    index
    installation
+   setup
+   usage
    ref/restraint
    contributing
    release_notes
