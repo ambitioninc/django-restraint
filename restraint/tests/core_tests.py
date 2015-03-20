@@ -3,7 +3,7 @@ from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
 from mock import patch, Mock
 
-from restraint import core
+from restraint import core, constants
 from restraint.models import PermSet, Perm, PermLevel, PermAccess
 
 
@@ -58,18 +58,13 @@ class TestRestraintLoadPerms(TestCase):
                 },
                 'can_view_stuff': {
                     'display_name': 'Can View Stuff',
-                    'levels': {
-                        '': {
-                            'display_name': '',
-                            'id_filter': None,
-                        }
-                    }
+                    'levels': constants.BOOLEAN_LEVELS_CONFIG,
                 }
             },
             'default_access': {
                 'super': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [''],
+                    'can_view_stuff': [constants.BOOLEAN_LEVELS_NAME],
                 },
                 'individual': {
                     'can_edit_stuff': ['some_stuff'],
@@ -210,18 +205,13 @@ class TestRestraintFilterQSet(TestCase):
                 },
                 'can_view_stuff': {
                     'display_name': 'Can View Stuff',
-                    'levels': {
-                        '': {
-                            'display_name': '',
-                            'id_filter': None,
-                        }
-                    }
+                    'levels': constants.BOOLEAN_LEVELS_CONFIG,
                 }
             },
             'default_access': {
                 'super': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [''],
+                    'can_view_stuff': [constants.BOOLEAN_LEVELS_NAME],
                 },
                 'individual': {
                     'can_edit_stuff': ['some_stuff'],
@@ -304,18 +294,13 @@ class UpdateRestraintDbTest(TestCase):
                 },
                 'can_view_stuff': {
                     'display_name': 'Can View Stuff',
-                    'levels': {
-                        '': {
-                            'display_name': '',
-                            'id_filter': None,
-                        },
-                    },
+                    'levels': constants.BOOLEAN_LEVELS_CONFIG,
                 },
             },
             'default_access': {
                 'global': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [''],
+                    'can_view_stuff': [constants.BOOLEAN_LEVELS_NAME],
                 },
                 'restricted': {
                     'can_edit_stuff': ['some_stuff'],
@@ -369,18 +354,13 @@ class UpdateRestraintDbTest(TestCase):
                 },
                 'can_view_stuff': {
                     'display_name': 'Can View Stuff',
-                    'levels': {
-                        '': {
-                            'display_name': 'Can View Stuff',
-                            'id_filter': None,
-                        },
-                    },
+                    'levels': constants.BOOLEAN_LEVELS_CONFIG,
                 },
             },
             'default_access': {
                 'global': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [''],
+                    'can_view_stuff': [constants.BOOLEAN_LEVELS_NAME],
                 },
                 'restricted': {
                     'can_edit_stuff': ['some_stuff'],
@@ -414,12 +394,7 @@ class UpdateRestraintDbTest(TestCase):
                 },
                 'can_view_stuff': {
                     'display_name': 'Can View Stuff',
-                    'levels': {
-                        '': {
-                            'display_name': '',
-                            'id_filter': None,
-                        },
-                    },
+                    'levels': constants.BOOLEAN_LEVELS_CONFIG,
                 },
             },
             'default_access': {
