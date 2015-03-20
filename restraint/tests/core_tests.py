@@ -39,12 +39,14 @@ class TestRestraintLoadPerms(TestCase):
                     'all_stuff': None,
                     'some_stuff': None,
                 },
-                'can_view_stuff': {}
+                'can_view_stuff': {
+                    '': None,
+                }
             },
             'default_access': {
                 'super': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [],
+                    'can_view_stuff': [''],
                 },
                 'individual': {
                     'can_edit_stuff': ['some_stuff'],
@@ -84,12 +86,14 @@ class TestRestraintLoadPerms(TestCase):
                     'all_stuff': None,
                     'some_stuff': None,
                 },
-                'can_view_stuff': {}
+                'can_view_stuff': {
+                    '': None,
+                }
             },
             'default_access': {
                 'super': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [],
+                    'can_view_stuff': [''],
                 },
                 'individual': {
                     'can_edit_stuff': ['some_stuff'],
@@ -138,7 +142,7 @@ class TestRestraintFilterQSet(TestCase):
             'default_access': {
                 'super': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [],
+                    'can_view_stuff': [''],
                 },
                 'individual': {
                     'can_edit_stuff': ['some_stuff'],

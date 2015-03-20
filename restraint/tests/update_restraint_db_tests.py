@@ -14,12 +14,14 @@ class UpdateRestraintDbTest(TestCase):
                     'all_stuff': None,
                     'some_stuff': None,
                 },
-                'can_view_stuff': {}
+                'can_view_stuff': {
+                    '': None,
+                }
             },
             'default_access': {
                 'global': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [],
+                    'can_view_stuff': [''],
                 },
                 'restricted': {
                     'can_edit_stuff': ['some_stuff'],

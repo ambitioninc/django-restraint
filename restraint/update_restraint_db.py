@@ -38,11 +38,9 @@ def update_perm_levels():
     perm_objs = {p.name: p for p in Perm.objects.all()}
     perm_levels = []
     for perm, levels in perms.items():
-        if levels:
-            for l in levels:
-                perm_levels.append(PermLevel(perm=perm_objs[perm], name=l))
-        else:
-            perm_levels.append(PermLevel(perm=perm_objs[perm], name=''))
+        assert(levels)
+        for l in levels:
+            perm_levels.append(PermLevel(perm=perm_objs[perm], name=l))
 
     sync(PermLevel.objects.all(), perm_levels, ['name', 'perm'])
 
@@ -52,10 +50,4 @@ def update_default_access():
     Updates the default configuration for permission set access.
     """
     default_access = get_restraint_config().get('default_access', {})
-    for perm_set in PermSet.objects.all():
-        perm_access, created = PermAccess.objects.get_or_create(perm_set=perm_set)
-        if created and perm_set.name in default_access:
-            for perm, perm_levels in default_access[perm_set.name].items():
-                # Add the default blank name for no perm levels
-                perm_levels = perm_levels or ['']
-                perm_access.perm_levels.add(*PermLevel.objects.filter(perm__name=perm, name__in=perm_levels))
+    PermAccess.objects.update_perm_set_access(default_access)
