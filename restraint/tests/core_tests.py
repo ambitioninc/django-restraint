@@ -3,6 +3,7 @@ from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
 
 from restraint import core
+from restraint.models import PermSet, Perm, PermLevel, PermAccess
 
 
 class TestRegisterRestraintConfig(SimpleTestCase):
@@ -195,3 +196,106 @@ class TestRestraintFilterQSet(TestCase):
 
         filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
         self.assertEquals(set(filtered_qset), set([]))
+
+
+class UpdateRestraintDbTest(TestCase):
+    def test_full_update_scenario_not_flush_default_access(self):
+        core.register_restraint_config({
+            'perm_sets': ['global', 'restricted'],
+            'perms': {
+                'can_edit_stuff': {
+                    'all_stuff': None,
+                    'some_stuff': None,
+                },
+                'can_view_stuff': {
+                    '': None,
+                }
+            },
+            'default_access': {
+                'global': {
+                    'can_edit_stuff': ['all_stuff', 'some_stuff'],
+                    'can_view_stuff': [''],
+                },
+                'restricted': {
+                    'can_edit_stuff': ['some_stuff'],
+                }
+            }
+        })
+        core.update_restraint_db()
+        core.update_restraint_db()
+
+        self.assertEquals(
+            set(PermSet.objects.values_list('name', flat=True)), set(['global', 'restricted']))
+
+        self.assertEquals(
+            set(Perm.objects.values_list('name', flat=True)), set(['can_view_stuff', 'can_edit_stuff']))
+
+        self.assertEquals(
+            set(PermLevel.objects.values_list('name', 'perm__name')),
+            set([('all_stuff', 'can_edit_stuff'), ('some_stuff', 'can_edit_stuff'), ('', 'can_view_stuff')]))
+
+        self.assertEquals(
+            set(PermAccess.objects.values_list('perm_levels__name', 'perm_levels__perm__name', 'perm_set__name')),
+            set([
+                ('all_stuff', 'can_edit_stuff', 'global'), ('', 'can_view_stuff', 'global'),
+                ('some_stuff', 'can_edit_stuff', 'global'), ('some_stuff', 'can_edit_stuff', 'restricted')
+            ])
+        )
+
+    def test_full_update_scenario_flush_default_access(self):
+        core.register_restraint_config({
+            'perm_sets': ['global', 'restricted'],
+            'perms': {
+                'can_edit_stuff': {
+                    'all_stuff': None,
+                    'some_stuff': None,
+                },
+                'can_view_stuff': {
+                    '': None,
+                }
+            },
+            'default_access': {
+                'global': {
+                    'can_edit_stuff': ['all_stuff', 'some_stuff'],
+                    'can_view_stuff': [''],
+                },
+                'restricted': {
+                    'can_edit_stuff': ['some_stuff'],
+                }
+            }
+        })
+        core.update_restraint_db()
+
+        core.register_restraint_config({
+            'perm_sets': ['global', 'restricted'],
+            'perms': {
+                'can_edit_stuff': {
+                    'all_stuff': None,
+                    'some_stuff': None,
+                },
+                'can_view_stuff': {
+                    '': None,
+                }
+            },
+            'default_access': {
+                'global': {
+                    'can_edit_stuff': ['all_stuff'],
+                },
+            }
+        })
+        core.update_restraint_db(flush_default_access=True)
+
+        self.assertEquals(
+            set(PermSet.objects.values_list('name', flat=True)), set(['global', 'restricted']))
+
+        self.assertEquals(
+            set(Perm.objects.values_list('name', flat=True)), set(['can_view_stuff', 'can_edit_stuff']))
+
+        self.assertEquals(
+            set(PermLevel.objects.values_list('name', 'perm__name')),
+            set([('all_stuff', 'can_edit_stuff'), ('some_stuff', 'can_edit_stuff'), ('', 'can_view_stuff')]))
+
+        self.assertEquals(
+            set(PermAccess.objects.values_list('perm_levels__name', 'perm_levels__perm__name', 'perm_set__name')),
+            set([('all_stuff', 'can_edit_stuff', 'global'), (None, None, 'restricted')])
+        )
