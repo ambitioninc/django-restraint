@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
-from mock import patch, Mock
 
 from restraint import core
 from restraint.update_restraint_db import update_restraint_db
@@ -113,47 +112,74 @@ class TestRestraintLoadPerms(TestCase):
         })
 
 
-class TestRestraintHasPerm(SimpleTestCase):
-    @patch.object(core.Restraint, '_load_perms', spec_set=True)
-    def test_with_level_true(self, mock_load_perms):
-        r = core.Restraint(Mock())
-        r._perms = {
-            'can_edit_stuff': {
-                'all_stuff': None,
-                'some_stuff': None,
-            }
-        }
-        self.assertTrue(r.has_perm('can_edit_stuff', 'all_stuff'))
+class TestRestraintFilterQSet(TestCase):
+    def setUp(self):
+        def perm_set_getter(u):
+            perm_sets = ['individual']
+            if u.is_superuser:
+                perm_sets.append('super')
+            if u.is_staff:
+                perm_sets.append('staff')
+            return perm_sets
 
-    @patch.object(core.Restraint, '_load_perms', spec_set=True)
-    def test_with_level_false(self, mock_load_perms):
-        r = core.Restraint(Mock())
-        r._perms = {
-            'can_edit_stuff': {
-                'all_stuff': None,
-                'some_stuff': None,
+        config = {
+            'perm_set_getter': perm_set_getter,
+            'perm_sets': ['super', 'individual', 'staff'],
+            'perms': {
+                'can_edit_stuff': {
+                    'all_stuff': None,
+                    'some_stuff': lambda a: User.objects.filter(id=a.id).values_list('id', flat=True),
+                    'only_superusers': lambda a: User.objects.filter(is_superuser=True).values_list('id', flat=True),
+                },
+                'can_view_stuff': {
+                    '': None,
+                }
+            },
+            'default_access': {
+                'super': {
+                    'can_edit_stuff': ['all_stuff', 'some_stuff'],
+                    'can_view_stuff': [],
+                },
+                'individual': {
+                    'can_edit_stuff': ['some_stuff'],
+                },
+                'staff': {
+                    'can_edit_stuff': ['some_stuff', 'only_superusers']
+                }
             }
         }
-        self.assertFalse(r.has_perm('can_edit_stuff', 'no_stuff'))
+        core.register_restraint_config(config)
+        update_restraint_db()
 
-    @patch.object(core.Restraint, '_load_perms', spec_set=True)
-    def test_without_level_true(self, mock_load_perms):
-        r = core.Restraint(Mock())
-        r._perms = {
-            'can_edit_stuff': {
-                'all_stuff': None,
-                'some_stuff': None,
-            }
-        }
-        self.assertTrue(r.has_perm('can_edit_stuff'))
+    def test_filter_qset_global_access(self):
+        # Make a user that is a superuser and verify they get all of the
+        # super user perms
+        u = G(User, is_superuser=True)
+        # Make another user that they will be able to edit
+        u2 = G(User)
+        r = core.Restraint(u)
 
-    @patch.object(core.Restraint, '_load_perms', spec_set=True)
-    def test_without_level_false(self, mock_load_perms):
-        r = core.Restraint(Mock())
-        r._perms = {
-            'can_edit_stuff': {
-                'all_stuff': None,
-                'some_stuff': None,
-            }
-        }
-        self.assertFalse(r.has_perm('can_view_stuff'))
+        filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
+        self.assertEquals(set(filtered_qset), set([u, u2]))
+
+    def test_filter_qset_local_access(self):
+        # Make a user that is not a superuser
+        u = G(User, is_superuser=False)
+        # Make another user that they will not be able to edit
+        G(User)
+        r = core.Restraint(u)
+
+        filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
+        self.assertEquals(set(filtered_qset), set([u]))
+
+    def test_filter_qset_multiple_local_access(self):
+        # Make a user that is staff
+        u = G(User, is_superuser=False, is_staff=True)
+        # Make another user that they will not be able to edit
+        G(User)
+        # Make another super user that they will be able to edit
+        u2 = G(User, is_superuser=True)
+        r = core.Restraint(u)
+
+        filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
+        self.assertEquals(set(filtered_qset), set([u, u2]))

@@ -67,4 +67,4 @@ class Restraint(object):
             return qset
         else:
             # Filter the queryset by the union of all filters
-            return qset.filter(id__in=set(chain(*[l(self.account) for l in self._perms[perm]])))
+            return qset.filter(id__in=set(chain(*[l(self._account) for l in self._perms[perm].values()])))
