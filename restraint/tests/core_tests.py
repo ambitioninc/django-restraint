@@ -183,3 +183,12 @@ class TestRestraintFilterQSet(TestCase):
 
         filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
         self.assertEquals(set(filtered_qset), set([u, u2]))
+
+    def test_filter_qset_no_perms(self):
+        # Make a user that is staff
+        u = G(User, is_superuser=False, is_staff=True)
+        # Load permissions that will not give them access to edit any accounts
+        r = core.Restraint(u, ['bad_perm'])
+
+        filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
+        self.assertEquals(set(filtered_qset), set([]))
