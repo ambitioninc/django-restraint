@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
+from mock import patch, Mock
 
 from restraint import core
 from restraint.update_restraint_db import update_restraint_db
@@ -23,8 +24,8 @@ class TestGetRestraintConfig(SimpleTestCase):
         self.assertEquals(core.get_restraint_config(), {'config': 'config'})
 
 
-class TestRestraintGetPerms(TestCase):
-    def test_get_all_perms(self):
+class TestRestraintLoadPerms(TestCase):
+    def test_load_all_perms(self):
         def perm_set_getter(u):
             perm_sets = ['individual']
             if u.is_superuser:
@@ -69,7 +70,7 @@ class TestRestraintGetPerms(TestCase):
             }
         })
 
-    def test_get_some_perms(self):
+    def test_load_some_perms(self):
         def perm_set_getter(u):
             perm_sets = ['individual']
             if u.is_superuser:
@@ -110,3 +111,49 @@ class TestRestraintGetPerms(TestCase):
                 'some_stuff': None,
             }
         })
+
+
+class TestRestraintHasPerm(SimpleTestCase):
+    @patch.object(core.Restraint, '_load_perms', spec_set=True)
+    def test_with_level_true(self, mock_load_perms):
+        r = core.Restraint(Mock())
+        r._perms = {
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        }
+        self.assertTrue(r.has_perm('can_edit_stuff', 'all_stuff'))
+
+    @patch.object(core.Restraint, '_load_perms', spec_set=True)
+    def test_with_level_false(self, mock_load_perms):
+        r = core.Restraint(Mock())
+        r._perms = {
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        }
+        self.assertFalse(r.has_perm('can_edit_stuff', 'no_stuff'))
+
+    @patch.object(core.Restraint, '_load_perms', spec_set=True)
+    def test_without_level_true(self, mock_load_perms):
+        r = core.Restraint(Mock())
+        r._perms = {
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        }
+        self.assertTrue(r.has_perm('can_edit_stuff'))
+
+    @patch.object(core.Restraint, '_load_perms', spec_set=True)
+    def test_without_level_false(self, mock_load_perms):
+        r = core.Restraint(Mock())
+        r._perms = {
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        }
+        self.assertFalse(r.has_perm('can_view_stuff'))

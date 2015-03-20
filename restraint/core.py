@@ -46,3 +46,10 @@ class Restraint(object):
             self._perms[l.perm.name].update({
                 l.name: self._config['perms'][l.perm.name].get(l.name)
             })
+
+    def has_perm(self, perm, level=None):
+        """
+        Returns true if the restraint object has the perm. If a level is not specified, it returns
+        true if that perm exists for any level.
+        """
+        return perm in self._perms and level in self._perms[perm] if level else perm in self._perms
