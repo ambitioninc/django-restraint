@@ -66,7 +66,7 @@ class Restraint(object):
         Returns true if the restraint object has the perm. If a level is not specified, it returns
         true if that perm exists for any level.
         """
-        return perm in self._perms and level in self._perms[perm]['levels'] if level else perm in self._perms
+        return perm in self._perms and level in self._perms[perm] if level else perm in self._perms
 
     def filter_qset(self, qset, perm):
         """

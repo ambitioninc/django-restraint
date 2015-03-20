@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
+from mock import patch, Mock
 
 from restraint import core
 from restraint.models import PermSet, Perm, PermLevel, PermAccess
@@ -106,6 +107,64 @@ class TestRestraintLoadPerms(TestCase):
                 'some_stuff': None,
             }
         })
+
+
+class TestRestraintHasPerms(SimpleTestCase):
+    @patch.object(core.Restraint, '_load_perms', spec_set=True)
+    def test_has_perm_w_level_true(self, mock_load_perms):
+        r = core.Restraint(Mock())
+        r._perms = {
+            'can_view_stuff': {
+                '': None,
+            },
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        }
+        self.assertTrue(r.has_perm('can_edit_stuff', 'all_stuff'))
+
+    @patch.object(core.Restraint, '_load_perms', spec_set=True)
+    def test_has_perm_w_level_false(self, mock_load_perms):
+        r = core.Restraint(Mock())
+        r._perms = {
+            'can_view_stuff': {
+                '': None,
+            },
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        }
+        self.assertFalse(r.has_perm('can_edit_stuff', 'no_stuff'))
+
+    @patch.object(core.Restraint, '_load_perms', spec_set=True)
+    def test_has_perm_wo_level_true(self, mock_load_perms):
+        r = core.Restraint(Mock())
+        r._perms = {
+            'can_view_stuff': {
+                '': None,
+            },
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        }
+        self.assertTrue(r.has_perm('can_edit_stuff'))
+
+    @patch.object(core.Restraint, '_load_perms', spec_set=True)
+    def test_has_perm_wo_level_false(self, mock_load_perms):
+        r = core.Restraint(Mock())
+        r._perms = {
+            'can_view_stuff': {
+                '': None,
+            },
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+            }
+        }
+        self.assertFalse(r.has_perm('can_mess_with_stuff'))
 
 
 class TestRestraintFilterQSet(TestCase):
