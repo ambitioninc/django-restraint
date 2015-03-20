@@ -19,23 +19,30 @@ def get_restraint_config():
         raise RuntimeError('No restraint config has been registered')
 
 
-def get_perms(account, which_perms=None):
+class Restraint(object):
     """
-    Given an account and which_perms to get, return a dictionary of all permissions, their
-    levels, and associated functions to retrieve restricted object IDs.
+    The primary way of accessing permissions. The programmer loads a restraint object with the
+    permission object and which permissions they want to load. One permissions are loaded for
+    that account, the user may check if a user has certain permissions and also restrict
+    querysets based on access levels that a user has.
     """
-    config = get_restraint_config()
-    perm_set_names = config['perm_set_getter'](account)
-    perm_levels = PermLevel.objects.filter(permaccess__perm_set__name__in=perm_set_names).select_related('perm')
-    if which_perms:
-        # Note that this doesn't completely filter out the permission levels that might have perms different
-        # than those in which_perms. Django 1.7 has the abilty to do better filtering on prefetched object
-        perm_levels = perm_levels.filter(perm__name__in=which_perms)
+    def __init__(self, account, which_perms=None):
+        self._config = get_restraint_config()
+        self._account = account
+        self._load_perms(account, which_perms)
 
-    perms = defaultdict(dict)
-    for l in perm_levels:
-        perms[l.perm.name].update({
-            l.name: config['perms'][l.perm.name].get(l.name)
-        })
+    @property
+    def perms(self):
+        return self._perms
 
-    return perms
+    def _load_perms(self, account, which_perms):
+        perm_set_names = self._config['perm_set_getter'](account)
+        perm_levels = PermLevel.objects.filter(permaccess__perm_set__name__in=perm_set_names).select_related('perm')
+        if which_perms:
+            perm_levels = perm_levels.filter(perm__name__in=which_perms)
+
+        self._perms = defaultdict(dict)
+        for l in perm_levels:
+            self._perms[l.perm.name].update({
+                l.name: self._config['perms'][l.perm.name].get(l.name)
+            })

@@ -23,7 +23,7 @@ class TestGetRestraintConfig(SimpleTestCase):
         self.assertEquals(core.get_restraint_config(), {'config': 'config'})
 
 
-class TestGetPerms(TestCase):
+class TestRestraintGetPerms(TestCase):
     def test_get_all_perms(self):
         def perm_set_getter(u):
             perm_sets = ['individual']
@@ -57,7 +57,8 @@ class TestGetPerms(TestCase):
         # Make a user that is a superuser and verify they get all of the
         # super user perms
         u = G(User, is_superuser=True)
-        perms = core.get_perms(u)
+        r = core.Restraint(u)
+        perms = r.perms
         self.assertEquals(perms, {
             'can_view_stuff': {
                 '': None,
@@ -101,7 +102,8 @@ class TestGetPerms(TestCase):
         # Make a user that is a superuser and verify they get all of the
         # super user perms
         u = G(User, is_superuser=True)
-        perms = core.get_perms(u, ['can_edit_stuff'])
+        r = core.Restraint(u, ['can_edit_stuff'])
+        perms = r.perms
         self.assertEquals(perms, {
             'can_edit_stuff': {
                 'all_stuff': None,
