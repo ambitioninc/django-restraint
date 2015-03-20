@@ -2,7 +2,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from restraint.update_restraint_db import update_restraint_db
+from restraint.core import update_restraint_db
 
 
 class Command(BaseCommand):

@@ -1,7 +1,7 @@
 from collections import defaultdict
 from itertools import chain
 
-from restraint.models import PermLevel
+from restraint import models
 
 
 # A global variable for holding the configuration of django restraint
@@ -18,6 +18,18 @@ def get_restraint_config():
         return RESTRAINT_CONFIG
     else:
         raise RuntimeError('No restraint config has been registered')
+
+
+def update_restraint_db(flush_default_access=False):
+    """
+    Updates the restraint db based on the restraint config.
+    Can optionally flush the previous default access configuration.
+    """
+    config = get_restraint_config()
+    models.PermSet.objects.sync_perm_sets(config['perm_sets'])
+    models.Perm.objects.sync_perms(config['perms'])
+    models.PermLevel.objects.sync_perm_levels(config['perms'])
+    models.PermAccess.objects.update_perm_set_access(config.get('default_access', {}), flush_default_access)
 
 
 class Restraint(object):
@@ -38,7 +50,8 @@ class Restraint(object):
 
     def _load_perms(self, account, which_perms):
         perm_set_names = self._config['perm_set_getter'](account)
-        perm_levels = PermLevel.objects.filter(permaccess__perm_set__name__in=perm_set_names).select_related('perm')
+        perm_levels = models.PermLevel.objects.filter(
+            permaccess__perm_set__name__in=perm_set_names).select_related('perm')
         if which_perms:
             perm_levels = perm_levels.filter(perm__name__in=which_perms)
 

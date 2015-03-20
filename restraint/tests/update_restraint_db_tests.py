@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from restraint.core import register_restraint_config
 from restraint.models import PermSet, Perm, PermLevel, PermAccess
-from restraint.update_restraint_db import update_restraint_db
+from restraint.core import update_restraint_db
 
 
 class UpdateRestraintDbTest(TestCase):

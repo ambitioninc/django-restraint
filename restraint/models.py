@@ -1,17 +1,49 @@
 from django.db import models
+from manager_utils import sync
+
+
+class PermSetManager(models.Manager):
+    def sync_perm_sets(self, perm_sets):
+        sync(self.get_queryset(), [PermSet(name=name) for name in perm_sets], ['name'])
 
 
 class PermSet(models.Model):
     name = models.CharField(max_length=256, unique=True)
 
+    objects = PermSetManager()
+
+
+class PermManager(models.Manager):
+    def sync_perms(self, perms):
+        sync(self.get_queryset(), [Perm(name=perm) for perm in perms], ['name'])
+
 
 class Perm(models.Model):
     name = models.CharField(max_length=256, unique=True)
+
+    objects = PermManager()
+
+
+class PermLevelManager(models.Manager):
+    def sync_perm_levels(self, perms):
+        """
+        Syncs the PermLevel models in the DB based on the config.
+        """
+        perm_objs = {p.name: p for p in Perm.objects.all()}
+        perm_levels = []
+        for perm, levels in perms.items():
+            assert(levels)
+            for l in levels:
+                perm_levels.append(PermLevel(perm=perm_objs[perm], name=l))
+
+        sync(self.get_queryset(), perm_levels, ['name', 'perm'])
 
 
 class PermLevel(models.Model):
     perm = models.ForeignKey(Perm)
     name = models.CharField(max_length=256)
+
+    objects = PermLevelManager()
 
     class Meta:
         unique_together = ('perm', 'name')

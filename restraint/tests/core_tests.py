@@ -3,7 +3,6 @@ from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
 
 from restraint import core
-from restraint.update_restraint_db import update_restraint_db
 
 
 class TestRegisterRestraintConfig(SimpleTestCase):
@@ -54,7 +53,7 @@ class TestRestraintLoadPerms(TestCase):
             }
         }
         core.register_restraint_config(config)
-        update_restraint_db()
+        core.update_restraint_db()
 
         # Make a user that is a superuser and verify they get all of the
         # super user perms
@@ -101,7 +100,7 @@ class TestRestraintLoadPerms(TestCase):
             }
         }
         core.register_restraint_config(config)
-        update_restraint_db()
+        core.update_restraint_db()
 
         # Make a user that is a superuser and verify they get all of the
         # super user perms
@@ -153,7 +152,7 @@ class TestRestraintFilterQSet(TestCase):
             }
         }
         core.register_restraint_config(config)
-        update_restraint_db()
+        core.update_restraint_db()
 
     def test_filter_qset_global_access(self):
         # Make a user that is a superuser and verify they get all of the
