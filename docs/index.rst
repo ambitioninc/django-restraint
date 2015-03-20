@@ -30,4 +30,4 @@ How can I get started using this?
 
 Requirements
 ------------
-Django restraint currently only supports Django 1.6 and above, although it can easily be upgraded to support more versions than the original user of the code.
+Django restraint currently only supports Django 1.6, although it can easily be upgraded to support more versions than the original user of the code.
