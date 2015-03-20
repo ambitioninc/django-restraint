@@ -11,14 +11,16 @@ class Migration(SchemaMigration):
         # Adding model 'PermSet'
         db.create_table(u'restraint_permset', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=256)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=256, blank=True)),
+            ('display_name', self.gf('django.db.models.fields.TextField')(blank=True)),
         ))
         db.send_create_signal(u'restraint', ['PermSet'])
 
         # Adding model 'Perm'
         db.create_table(u'restraint_perm', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=256)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=256, blank=True)),
+            ('display_name', self.gf('django.db.models.fields.TextField')(blank=True)),
         ))
         db.send_create_signal(u'restraint', ['Perm'])
 
@@ -26,7 +28,8 @@ class Migration(SchemaMigration):
         db.create_table(u'restraint_permlevel', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('perm', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['restraint.Perm'])),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=256)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=256, blank=True)),
+            ('display_name', self.gf('django.db.models.fields.TextField')(blank=True)),
         ))
         db.send_create_signal(u'restraint', ['PermLevel'])
 
@@ -73,8 +76,9 @@ class Migration(SchemaMigration):
     models = {
         u'restraint.perm': {
             'Meta': {'object_name': 'Perm'},
+            'display_name': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256'})
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256', 'blank': 'True'})
         },
         u'restraint.permaccess': {
             'Meta': {'object_name': 'PermAccess'},
@@ -84,14 +88,16 @@ class Migration(SchemaMigration):
         },
         u'restraint.permlevel': {
             'Meta': {'unique_together': "(('perm', 'name'),)", 'object_name': 'PermLevel'},
+            'display_name': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
             'perm': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['restraint.Perm']"})
         },
         u'restraint.permset': {
             'Meta': {'object_name': 'PermSet'},
+            'display_name': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256'})
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256', 'blank': 'True'})
         }
     }
 

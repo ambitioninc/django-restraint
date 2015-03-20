@@ -24,7 +24,7 @@ class TestGetRestraintConfig(SimpleTestCase):
 
 
 class TestRestraintLoadPerms(TestCase):
-    def test_load_all_perms(self):
+    def setUp(self):
         def perm_set_getter(u):
             perm_sets = ['individual']
             if u.is_superuser:
@@ -33,14 +33,36 @@ class TestRestraintLoadPerms(TestCase):
 
         config = {
             'perm_set_getter': perm_set_getter,
-            'perm_sets': ['super', 'individual'],
+            'perm_sets': {
+                'super': {
+                    'display_name': 'Super',
+                },
+                'individual': {
+                    'display_name': 'Individual'
+                }
+            },
             'perms': {
                 'can_edit_stuff': {
-                    'all_stuff': None,
-                    'some_stuff': None,
+                    'display_name': 'Can Edit Stuff',
+                    'levels': {
+                        'all_stuff': {
+                            'display_name': 'All Stuff',
+                            'id_filter': None,
+                        },
+                        'some_stuff': {
+                            'display_name': 'Some Stuff',
+                            'id_filter': None,
+                        }
+                    }
                 },
                 'can_view_stuff': {
-                    '': None,
+                    'display_name': 'Can View Stuff',
+                    'levels': {
+                        '': {
+                            'display_name': '',
+                            'id_filter': None,
+                        }
+                    }
                 }
             },
             'default_access': {
@@ -56,6 +78,7 @@ class TestRestraintLoadPerms(TestCase):
         core.register_restraint_config(config)
         core.update_restraint_db()
 
+    def test_load_all_perms(self):
         # Make a user that is a superuser and verify they get all of the
         # super user perms
         u = G(User, is_superuser=True)
@@ -72,37 +95,6 @@ class TestRestraintLoadPerms(TestCase):
         })
 
     def test_load_some_perms(self):
-        def perm_set_getter(u):
-            perm_sets = ['individual']
-            if u.is_superuser:
-                perm_sets.append('super')
-            return perm_sets
-
-        config = {
-            'perm_set_getter': perm_set_getter,
-            'perm_sets': ['super', 'individual'],
-            'perms': {
-                'can_edit_stuff': {
-                    'all_stuff': None,
-                    'some_stuff': None,
-                },
-                'can_view_stuff': {
-                    '': None,
-                }
-            },
-            'default_access': {
-                'super': {
-                    'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                    'can_view_stuff': [''],
-                },
-                'individual': {
-                    'can_edit_stuff': ['some_stuff'],
-                }
-            }
-        }
-        core.register_restraint_config(config)
-        core.update_restraint_db()
-
         # Make a user that is a superuser and verify they get all of the
         # super user perms
         u = G(User, is_superuser=True)
@@ -128,15 +120,43 @@ class TestRestraintFilterQSet(TestCase):
 
         config = {
             'perm_set_getter': perm_set_getter,
-            'perm_sets': ['super', 'individual', 'staff'],
+            'perm_sets': {
+                'super': {
+                    'display_name': 'Super',
+                },
+                'individual': {
+                    'display_name': 'Individual',
+                },
+                'staff': {
+                    'display_name': 'Staff'
+                }
+            },
             'perms': {
                 'can_edit_stuff': {
-                    'all_stuff': None,
-                    'some_stuff': lambda a: User.objects.filter(id=a.id).values_list('id', flat=True),
-                    'only_superusers': lambda a: User.objects.filter(is_superuser=True).values_list('id', flat=True),
+                    'display_name': 'Can Edit Stuff',
+                    'levels': {
+                        'all_stuff': {
+                            'display_name': 'All Stuff',
+                            'id_filter': None,
+                        },
+                        'some_stuff': {
+                            'display_name': 'Some Stuff',
+                            'id_filter': lambda a: User.objects.filter(id=a.id).values_list('id', flat=True),
+                        },
+                        'only_superusers': {
+                            'display_name': 'Only Superusers',
+                            'id_filter': lambda a: User.objects.filter(is_superuser=True).values_list('id', flat=True),
+                        },
+                    },
                 },
                 'can_view_stuff': {
-                    '': None,
+                    'display_name': 'Can View Stuff',
+                    'levels': {
+                        '': {
+                            'display_name': '',
+                            'id_filter': None,
+                        }
+                    }
                 }
             },
             'default_access': {
@@ -201,15 +221,37 @@ class TestRestraintFilterQSet(TestCase):
 class UpdateRestraintDbTest(TestCase):
     def test_full_update_scenario_not_flush_default_access(self):
         core.register_restraint_config({
-            'perm_sets': ['global', 'restricted'],
+            'perm_sets': {
+                'global': {
+                    'display_name': 'Global',
+                },
+                'restricted': {
+                    'display_name': 'Restricted',
+                },
+            },
             'perms': {
                 'can_edit_stuff': {
-                    'all_stuff': None,
-                    'some_stuff': None,
+                    'display_name': 'Can Edit Stuff',
+                    'levels': {
+                        'all_stuff': {
+                            'display_name': 'All Stuff',
+                            'id_filter': None,
+                        },
+                        'some_stuff': {
+                            'display_name': 'Some Stuff',
+                            'id_filter': None,
+                        },
+                    },
                 },
                 'can_view_stuff': {
-                    '': None,
-                }
+                    'display_name': 'Can View Stuff',
+                    'levels': {
+                        '': {
+                            'display_name': '',
+                            'id_filter': None,
+                        },
+                    },
+                },
             },
             'default_access': {
                 'global': {
@@ -244,15 +286,37 @@ class UpdateRestraintDbTest(TestCase):
 
     def test_full_update_scenario_flush_default_access(self):
         core.register_restraint_config({
-            'perm_sets': ['global', 'restricted'],
+            'perm_sets': {
+                'global': {
+                    'display_name': 'Global',
+                },
+                'restricted': {
+                    'display_name': 'Restricted',
+                },
+            },
             'perms': {
                 'can_edit_stuff': {
-                    'all_stuff': None,
-                    'some_stuff': None,
+                    'display_name': 'Can Edit Stuff',
+                    'levels': {
+                        'all_stuff': {
+                            'display_name': 'All Stuff',
+                            'id_filter': None,
+                        },
+                        'some_stuff': {
+                            'display_name': 'Some Stuff',
+                            'id_filter': None,
+                        },
+                    },
                 },
                 'can_view_stuff': {
-                    '': None,
-                }
+                    'display_name': 'Can View Stuff',
+                    'levels': {
+                        '': {
+                            'display_name': 'Can View Stuff',
+                            'id_filter': None,
+                        },
+                    },
+                },
             },
             'default_access': {
                 'global': {
@@ -267,15 +331,37 @@ class UpdateRestraintDbTest(TestCase):
         core.update_restraint_db()
 
         core.register_restraint_config({
-            'perm_sets': ['global', 'restricted'],
+            'perm_sets': {
+                'global': {
+                    'display_name': 'Global',
+                },
+                'restricted': {
+                    'display_name': 'Restricted',
+                },
+            },
             'perms': {
                 'can_edit_stuff': {
-                    'all_stuff': None,
-                    'some_stuff': None,
+                    'display_name': 'Can Edit Stuff',
+                    'levels': {
+                        'all_stuff': {
+                            'display_name': 'All Stuff',
+                            'id_filter': None,
+                        },
+                        'some_stuff': {
+                            'display_name': 'Some Stuff',
+                            'id_filter': None,
+                        },
+                    },
                 },
                 'can_view_stuff': {
-                    '': None,
-                }
+                    'display_name': 'Can View Stuff',
+                    'levels': {
+                        '': {
+                            'display_name': '',
+                            'id_filter': None,
+                        },
+                    },
+                },
             },
             'default_access': {
                 'global': {
