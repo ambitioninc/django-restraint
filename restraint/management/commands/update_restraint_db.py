@@ -15,7 +15,7 @@ class Command(BaseCommand):
         make_option(
             '--flush_permission_sets',
             action='store_true',
-            dest='async',
+            dest='flush_permission_sets',
             default=False,
             help='Flush all permission sets before updating'
         ),
