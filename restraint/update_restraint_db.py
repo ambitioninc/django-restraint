@@ -7,11 +7,11 @@ from restraint.core import get_restraint_config
 from manager_utils import sync
 
 
-def update_restraint_db():
+def update_restraint_db(flush_default_access=False):
     update_perm_sets()
     update_perms()
     update_perm_levels()
-    update_default_access()
+    update_default_access(flush_default_access)
 
 
 def update_perm_sets():
@@ -45,9 +45,9 @@ def update_perm_levels():
     sync(PermLevel.objects.all(), perm_levels, ['name', 'perm'])
 
 
-def update_default_access():
+def update_default_access(flush_default_access):
     """
     Updates the default configuration for permission set access.
     """
     default_access = get_restraint_config().get('default_access', {})
-    PermAccess.objects.update_perm_set_access(default_access)
+    PermAccess.objects.update_perm_set_access(default_access, flush_default_access)

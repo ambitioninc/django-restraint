@@ -2,7 +2,6 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from restraint.models import PermSet
 from restraint.update_restraint_db import update_restraint_db
 
 
@@ -13,9 +12,9 @@ class Command(BaseCommand):
     """
     option_list = BaseCommand.option_list + (
         make_option(
-            '--flush_permission_sets',
+            '--flush_default_access',
             action='store_true',
-            dest='flush_permission_sets',
+            dest='flush_default_access',
             default=False,
             help='Flush all permission sets before updating'
         ),
@@ -25,7 +24,4 @@ class Command(BaseCommand):
         """
         Runs the command to update the restraint db.
         """
-        if options['flush_permission_sets']:
-            PermSet.objects.all().delete()
-
-        update_restraint_db()
+        update_restraint_db(flush_default_access=options['flush_default_access'])
