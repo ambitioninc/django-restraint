@@ -40,9 +40,11 @@ setup(
     license='MIT',
     install_requires=[
         'django>=1.6',
+        'django-manager-utils>=0.7.1',
     ],
     tests_require=[
         'psycopg2',
+        'django_dynamic_fixture',
         'django-nose',
         'south',
         'mock>=1.0.1',
