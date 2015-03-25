@@ -1,6 +1,6 @@
 Django-restraint Documentation
 ==============================
-Restraint is a dynamic object-level permission system for Django. An overview of Django restraint is below, followed by :doc:`Installation<installation>`, :doc:`Setup<setup>`, :doc:`Usage<usage>`,
+Restraint is a dynamic object-level permission system for Django. It allows permissions to be added to sets of individuals or individuals themselves. An overview of Django restraint is below, followed by :doc:`Installation<installation>`, :doc:`Setup<setup>`, :doc:`Usage<usage>`,
 and :doc:`API documentation <ref/restraint>`
 
 Overview
