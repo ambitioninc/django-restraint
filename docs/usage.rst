@@ -114,7 +114,7 @@ To remove a permission level to a user, do the following:
     # Remove a defined level
     PermAccess.remove_individual_access(user, 'my_perm', 'my_perm_level')
 
-    # Removef the boolean level
+    # Remove the boolean level
     PermAccess.remove_individual_access(user, 'my_perm', constants.BOOLEAN_LEVELS_NAME)
 
 When individual permissions are added, they will be accessed the same way as permission set levels with the :code:`Restraint` object.
