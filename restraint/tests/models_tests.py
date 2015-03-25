@@ -1,7 +1,9 @@
-from django.test import SimpleTestCase
-from django_dynamic_fixture import N
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.test import SimpleTestCase, TestCase
+from django_dynamic_fixture import N, G, F
 
-from restraint.models import PermSet, Perm, PermLevel
+from restraint.models import PermSet, Perm, PermLevel, PermAccess
 
 
 class PermSetTest(SimpleTestCase):
@@ -20,3 +22,32 @@ class PermLevelTest(SimpleTestCase):
     def test_unicode(self):
         ps = N(PermLevel, display_name='My Perm Level', persist_dependencies=False)
         self.assertTrue(ps.__unicode__(), 'My Perm Level')
+
+
+class PermAccessTest(TestCase):
+    def test_add_individual_access_level_exists(self):
+        """
+        Tests adding an individual permission to a user.
+        """
+        u = G(User)
+        pl = G(PermLevel, perm=F(name='my_perm'), name='my_level')
+
+        PermAccess.objects.add_individual_access(u, 'my_perm', 'my_level')
+        PermAccess.objects.add_individual_access(u, 'my_perm', 'my_level')
+
+        pa = PermAccess.objects.get(perm_user_id=u.id, perm_user_type=ContentType.objects.get_for_model(u))
+        self.assertEquals(list(pa.perm_levels.all()), [pl])
+
+    def test_remove_individual_access_level_exists(self):
+        """
+        Tests adding an individual permission to a user.
+        """
+        u = G(User)
+        G(PermLevel, perm=F(name='my_perm'), name='my_level')
+
+        PermAccess.objects.add_individual_access(u, 'my_perm', 'my_level')
+        PermAccess.objects.add_individual_access(u, 'my_perm', 'my_level')
+        PermAccess.objects.remove_individual_access(u, 'my_perm', 'my_level')
+
+        pa = PermAccess.objects.get(perm_user_id=u.id, perm_user_type=ContentType.objects.get_for_model(u))
+        self.assertEquals(list(pa.perm_levels.all()), [])
