@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from manager_utils import sync
 
@@ -97,7 +98,16 @@ class PermAccessManager(models.Manager):
 
 
 class PermAccess(models.Model):
-    perm_set = models.OneToOneField(PermSet)
+    """
+    Provides access a list of permission levels for a permission set or for an individual
+    user
+    """
+    perm_set = models.OneToOneField(PermSet, null=True, default=None)
+    perm_user_type = models.ForeignKey(ContentType, null=True, default=None)
+    perm_user_id = models.PositiveIntegerField(default=0)
     perm_levels = models.ManyToManyField(PermLevel)
+
+    class Meta:
+        unique_together = ('perm_user_type', 'perm_user_id')
 
     objects = PermAccessManager()
