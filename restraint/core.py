@@ -1,6 +1,8 @@
 from collections import defaultdict
 from itertools import chain
 
+from django.db.models import Q
+
 from restraint import models
 
 
@@ -60,7 +62,10 @@ class Restraint(object):
     def _load_perms(self, account, which_perms):
         perm_set_names = self._config['perm_set_getter'](account)
         perm_levels = models.PermLevel.objects.filter(
-            permaccess__perm_set__name__in=perm_set_names).select_related('perm')
+            Q(permaccess__perm_set__name__in=perm_set_names) | Q(
+                permaccess__perm_user_id=account.id,
+                permaccess__perm_user_type__app_label=account._meta.app_label,
+                permaccess__perm_user_type__model=account._meta.model_name)).select_related('perm')
         if which_perms:
             perm_levels = perm_levels.filter(perm__name__in=which_perms)
 
