@@ -22,6 +22,8 @@ How are permission sets of users determined? Dynamically. A function is register
 
 How do I figure out the permissions of a user? Dynamically. You instantiate a `Restraint` object with the user and the permissions you are interested in obtaining. The `Restraint` object can then easily tell you if a user has certain permissions and limit querysets by the permissions they own.
 
+Maybe I don't want to assign permissions to sets. How can I assign permissions to individual users? You can use various model manager methods in Restraint to accomplish this.
+
 How can I get started using this?
 
 1. Read the :doc:`Setup Documentation<setup>` first.

@@ -111,3 +111,8 @@ Syncing Your Configuration To The Database
 The Restraint configuration will need to be synced to the database before it can be used by an application. Similar to Django's :code:`update_permissions`, Restraint provides an :code:`update_restraint_db` management command. When this command is called, all permission sets and permission levels are synced. Any permission sets and levels that were in the configuration before and not in the current one will be deleted.
 
 The :code:`default_access` configuration in the Restraint configuration will only be synced the first time this management command is executed. This behavior can be overridden by passing the :code:`--flush_default_access` parameter to the management command.
+
+
+How Do I Add Permissions To Individuals?
+----------------------------------------
+Adding permissions to individuals is not supported in the setup methods of Restraint. However, this may be done dynamically with model manager methods that are covered in the :doc:`Usage<usage>` documentation.
