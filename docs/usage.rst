@@ -81,3 +81,40 @@ Restraint provides a model manager method if a user wants to sync a permission s
 
 
 In the above example, the same format as the :code:`default_access` part of the Restraint configuration is used to sync the configuration of permission sets.
+
+
+Adding And Removing Permissions For Individuals
+-----------------------------------------------
+Along with allowing permissions to be specified over permission sets, Restraint also provides the ability to assign permission levels to specific users.
+
+To add a permission level to a user, do the following:
+
+.. code-block:: python
+
+    from restraint import constants
+    from restraint.models import PermAccess
+
+    user = individual_user_model_object
+
+    # Add a defined level
+    PermAccess.add_individual_access(user, 'my_perm', 'my_perm_level')
+
+    # Add the boolean level
+    PermAccess.add_individual_access(user, 'my_perm', constants.BOOLEAN_LEVELS_NAME)
+
+To remove a permission level to a user, do the following:
+
+.. code-block:: python
+
+    from restraint import constants
+    from restraint.models import PermAccess
+
+    user = individual_user_model_object
+
+    # Remove a defined level
+    PermAccess.remove_individual_access(user, 'my_perm', 'my_perm_level')
+
+    # Remove the boolean level
+    PermAccess.remove_individual_access(user, 'my_perm', constants.BOOLEAN_LEVELS_NAME)
+
+When individual permissions are added, they will be accessed the same way as permission set levels with the :code:`Restraint` object.

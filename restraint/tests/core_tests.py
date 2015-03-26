@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
 from mock import patch, Mock
@@ -53,6 +54,10 @@ class TestRestraintLoadPerms(TestCase):
                         'some_stuff': {
                             'display_name': 'Some Stuff',
                             'id_filter': None,
+                        },
+                        'most_stuff': {
+                            'display_name': 'Most Stuff',
+                            'id_filter': None,
                         }
                     }
                 },
@@ -73,6 +78,27 @@ class TestRestraintLoadPerms(TestCase):
         }
         core.register_restraint_config(config)
         core.update_restraint_db()
+
+    def test_load_all_perms_with_individual_perms(self):
+        # Make a user that is a superuser and verify they get all of the
+        # super user perms. Also, add an individual permission to the user
+        # and verify they get that too
+        u = G(User, is_superuser=True)
+        pa = G(PermAccess, perm_user_id=u.id, perm_user_type=ContentType.objects.get_for_model(u))
+        pa.perm_levels.add(PermLevel.objects.get(name='most_stuff'))
+
+        r = core.Restraint(u)
+        perms = r.perms
+        self.assertEquals(perms, {
+            'can_view_stuff': {
+                '': None,
+            },
+            'can_edit_stuff': {
+                'all_stuff': None,
+                'some_stuff': None,
+                'most_stuff': None,
+            }
+        })
 
     def test_load_all_perms(self):
         # Make a user that is a superuser and verify they get all of the
