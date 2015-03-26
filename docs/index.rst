@@ -1,6 +1,6 @@
 Django-restraint Documentation
 ==============================
-Restraint is a dynamic object-level permission system for Django. An overview of Django restraint is below, followed by :doc:`Installation<installation>`, :doc:`Setup<setup>`, :doc:`Usage<usage>`,
+Restraint is a dynamic object-level permission system for Django. It allows permissions to be added to sets of individuals or individuals themselves. An overview of Django restraint is below, followed by :doc:`Installation<installation>`, :doc:`Setup<setup>`, :doc:`Usage<usage>`,
 and :doc:`API documentation <ref/restraint>`
 
 Overview
@@ -22,6 +22,8 @@ How are permission sets of users determined? Dynamically. A function is register
 
 How do I figure out the permissions of a user? Dynamically. You instantiate a `Restraint` object with the user and the permissions you are interested in obtaining. The `Restraint` object can then easily tell you if a user has certain permissions and limit querysets by the permissions they own.
 
+Maybe I don't want to assign permissions to sets. How can I assign permissions to individual users? You can use various model manager methods in Restraint to accomplish this.
+
 How can I get started using this?
 
 1. Read the :doc:`Setup Documentation<setup>` first.
@@ -30,4 +32,4 @@ How can I get started using this?
 
 Requirements
 ------------
-Django restraint currently only supports Django 1.6 and above, although it can easily be upgraded to support more versions than the original user of the code.
+Django restraint currently only supports Django 1.6, although it can easily be upgraded to support more versions than the original user of the code.

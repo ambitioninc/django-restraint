@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from manager_utils import sync
 
@@ -95,9 +96,35 @@ class PermAccessManager(models.Manager):
             perm_access.perm_levels.clear()
             perm_access.perm_levels.add(*perm_access_levels)
 
+    def add_individual_access(self, user, perm_name, level_name):
+        """
+        Given a user, a permission name, and the name of the level, add the level in the permission access for
+        the individual user.
+        """
+        pa, created = PermAccess.objects.get_or_create(
+            perm_user_id=user.id, perm_user_type=ContentType.objects.get_for_model(user))
+        pa.perm_levels.add(PermLevel.objects.get(perm__name=perm_name, name=level_name))
+
+    def remove_individual_access(self, user, perm_name, level_name):
+        """
+        Given a user, a permission name, and the name of the level, remove the level in the permission access for
+        the individual user.
+        """
+        pa = PermAccess.objects.get(perm_user_id=user.id, perm_user_type=ContentType.objects.get_for_model(user))
+        pa.perm_levels.remove(PermLevel.objects.get(perm__name=perm_name, name=level_name))
+
 
 class PermAccess(models.Model):
-    perm_set = models.OneToOneField(PermSet)
+    """
+    Provides access a list of permission levels for a permission set or for an individual
+    user
+    """
+    perm_set = models.OneToOneField(PermSet, null=True, default=None)
+    perm_user_type = models.ForeignKey(ContentType, null=True, default=None)
+    perm_user_id = models.PositiveIntegerField(default=0)
     perm_levels = models.ManyToManyField(PermLevel)
+
+    class Meta:
+        unique_together = ('perm_user_type', 'perm_user_id')
 
     objects = PermAccessManager()

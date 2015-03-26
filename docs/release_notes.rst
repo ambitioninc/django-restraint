@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v0.2.0
+------
+
+* Added individual permission capabilities
+
 v0.1
 ----
 
