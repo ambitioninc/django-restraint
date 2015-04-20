@@ -2,6 +2,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from manager_utils import sync
 
+from six import python_2_unicode_compatible
+
 
 class PermSetManager(models.Manager):
     def sync_perm_sets(self, perm_sets):
@@ -14,13 +16,14 @@ class PermSetManager(models.Manager):
             ['name'], ['display_name'])
 
 
+@python_2_unicode_compatible
 class PermSet(models.Model):
     name = models.CharField(max_length=256, unique=True, blank=True)
     display_name = models.TextField(blank=True)
 
     objects = PermSetManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.display_name
 
 
@@ -35,13 +38,14 @@ class PermManager(models.Manager):
             ['name'], ['display_name'])
 
 
+@python_2_unicode_compatible
 class Perm(models.Model):
     name = models.CharField(max_length=256, unique=True, blank=True)
     display_name = models.TextField(blank=True)
 
     objects = PermManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.display_name
 
 
@@ -62,6 +66,7 @@ class PermLevelManager(models.Manager):
         sync(self.get_queryset(), perm_levels, ['name', 'perm'], ['display_name'])
 
 
+@python_2_unicode_compatible
 class PermLevel(models.Model):
     perm = models.ForeignKey(Perm)
     name = models.CharField(max_length=256, blank=True)
@@ -72,7 +77,7 @@ class PermLevel(models.Model):
     class Meta:
         unique_together = ('perm', 'name')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.display_name
 
 

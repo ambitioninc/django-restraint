@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v0.2.1
+------
+* Added Django 1.7 support
+
 v0.2.0
 ------
 
