@@ -2,8 +2,10 @@
 branch = True
 omit =
     restraint/migrations/*
+    restraint/south_migrations/*
     restraint/tests/*
     restraint/version.py
+    restraint/apps.py
 source = restraint
 [report]
 exclude_lines =
