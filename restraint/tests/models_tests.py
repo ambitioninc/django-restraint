@@ -8,19 +8,19 @@ from restraint.models import PermSet, Perm, PermLevel, PermAccess
 
 class PermSetTest(SimpleTestCase):
     def test_str(self):
-        ps = N(PermSet, display_name='My Perm Set', persist_dependencies=False)
+        ps = N(PermSet, display_name='My Perm Set')
         self.assertTrue(str(ps), 'My Perm Set')
 
 
 class PermTest(SimpleTestCase):
     def test_str(self):
-        ps = N(Perm, display_name='My Perm', persist_dependencies=False)
+        ps = N(Perm, display_name='My Perm')
         self.assertTrue(str(ps), 'My Perm')
 
 
 class PermLevelTest(SimpleTestCase):
     def test_str(self):
-        ps = N(PermLevel, display_name='My Perm Level', persist_dependencies=False)
+        ps = N(PermLevel, display_name='My Perm Level')
         self.assertTrue(str(ps), 'My Perm Level')
 
 

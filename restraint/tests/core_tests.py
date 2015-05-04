@@ -29,8 +29,8 @@ class TestRestraintLoadPerms(TestCase):
     def setUp(self):
         def perm_set_getter(u):
             perm_sets = ['individual']
-            if u.is_superuser:
-                perm_sets.append('super')
+            # if u.is_superuser:
+            perm_sets.append('super')
             return perm_sets
 
         config = {
