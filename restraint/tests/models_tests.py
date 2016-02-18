@@ -18,7 +18,7 @@ class PermTest(SimpleTestCase):
         self.assertTrue(str(ps), 'My Perm')
 
 
-class PermLevelTest(SimpleTestCase):
+class PermLevelTest(TestCase):
     def test_str(self):
         ps = N(PermLevel, display_name='My Perm Level')
         self.assertTrue(str(ps), 'My Perm Level')
