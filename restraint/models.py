@@ -32,10 +32,10 @@ class PermManager(models.Manager):
         """
         Syncs the perms to Perm models.
         """
-        sync(
+        return sync(
             self.get_queryset(),
             [Perm(name=name, display_name=config.get('display_name', '')) for name, config in perms.items()],
-            ['name'], ['display_name'])
+            ['name'], ['display_name'], return_upserts_distinct=True)
 
 
 @python_2_unicode_compatible
@@ -82,23 +82,25 @@ class PermLevel(models.Model):
 
 
 class PermAccessManager(models.Manager):
-    def update_perm_set_access(self, config, flush_previous_config=False):
+    def update_perm_set_access(self, config, new_perms=[], flush_previous_config=False):
         """
         Update the access for perm sets with a config. The user can optionally flush
         the previous config and set it to the new one.
         """
         for perm_set in PermSet.objects.all():
             perm_access, created = PermAccess.objects.get_or_create(perm_set=perm_set)
-            if not created and not flush_previous_config:
-                # If we are not flushing the previous config, continue if it exists
-                continue
-
             perm_access_levels = []
             for perm, perm_levels in config.get(perm_set.name, {}).items():
+                # If we are not flushing the previous config, continue if the perm not among the newly created perms
+                # this is necessary because perm access is mutable; We don't want to destroy modifications made to
+                # existing permissions
+                if not created and not flush_previous_config and perm not in [p.name for p in new_perms]:
+                    continue
                 assert(perm_levels)
                 perm_access_levels.extend(PermLevel.objects.filter(perm__name=perm, name__in=perm_levels))
 
-            perm_access.perm_levels.clear()
+            if flush_previous_config:
+                perm_access.perm_levels.clear()
             perm_access.perm_levels.add(*perm_access_levels)
 
     def add_individual_access(self, user, perm_name, level_name):

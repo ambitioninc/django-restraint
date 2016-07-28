@@ -29,9 +29,9 @@ def update_restraint_db(flush_default_access=False):
     """
     config = get_restraint_config()
     models.PermSet.objects.sync_perm_sets(config['perm_sets'])
-    models.Perm.objects.sync_perms(config['perms'])
+    updated_perms, new_perms = models.Perm.objects.sync_perms(config['perms'])
     models.PermLevel.objects.sync_perm_levels(config['perms'])
-    models.PermAccess.objects.update_perm_set_access(config.get('default_access', {}), flush_default_access)
+    models.PermAccess.objects.update_perm_set_access(config.get('default_access', {}), new_perms, flush_default_access)
 
 
 class Restraint(object):
