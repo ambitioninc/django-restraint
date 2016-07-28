@@ -336,21 +336,96 @@ class UpdateRestraintDbTest(TestCase):
         core.update_restraint_db()
         core.update_restraint_db()
 
+    def test_full_update_scenario_not_flush_default_access_update_new_perm(self):
+        """
+        Verifies that existing permission set is given access to new permission
+        """
+        config = {
+            'perm_sets': {
+                'global': {
+                    'display_name': 'Global',
+                },
+                'restricted': {
+                    'display_name': 'Restricted',
+                },
+            },
+            'perms': {
+                'can_edit_stuff': {
+                    'display_name': 'Can Edit Stuff',
+                    'levels': {
+                        'all_stuff': {
+                            'display_name': 'All Stuff',
+                            'id_filter': None,
+                        },
+                        'some_stuff': {
+                            'display_name': 'Some Stuff',
+                            'id_filter': None,
+                        },
+                    },
+                },
+                'can_view_stuff': {
+                    'display_name': 'Can View Stuff',
+                    'levels': constants.BOOLEAN_LEVELS_CONFIG,
+                },
+            },
+            'default_access': {
+                'global': {
+                    'can_edit_stuff': ['all_stuff', 'some_stuff'],
+                    'can_view_stuff': [constants.BOOLEAN_LEVELS_NAME],
+                },
+                'restricted': {
+                    'can_edit_stuff': ['some_stuff'],
+                }
+            }
+        }
+        core.register_restraint_config(config)
+        core.update_restraint_db()
+        # add permission
+        config['perms']['can_do_stuff'] = {
+            'display_name': 'Can Do Stuff',
+            'levels': {
+                'all_stuff': {
+                    'display_name': 'All Stuff',
+                    'id_filter': None,
+                },
+                'this_thing': {
+                    'display_name': 'This Thing',
+                    'id_filter': None,
+                },
+            },
+        }
+        config['perms']['can_alter_stuff'] = {
+            'display_name': 'Can Alter Stuff',
+            'levels': constants.BOOLEAN_LEVELS_CONFIG
+        }
+        config['default_access']['global']['can_alter_stuff'] = [constants.BOOLEAN_LEVELS_NAME]
+        config['default_access']['restricted']['can_do_stuff'] = ['all_stuff', 'this_thing']
+        core.register_restraint_config(config)
+        # update again
+        core.update_restraint_db()
+
         self.assertEquals(
             set(PermSet.objects.values_list('name', flat=True)), set(['global', 'restricted']))
 
         self.assertEquals(
-            set(Perm.objects.values_list('name', flat=True)), set(['can_view_stuff', 'can_edit_stuff']))
+            set(Perm.objects.values_list('name', flat=True)),
+            set(['can_view_stuff', 'can_edit_stuff', 'can_do_stuff', 'can_alter_stuff']))
 
         self.assertEquals(
             set(PermLevel.objects.values_list('name', 'perm__name')),
-            set([('all_stuff', 'can_edit_stuff'), ('some_stuff', 'can_edit_stuff'), ('', 'can_view_stuff')]))
+            set([
+                ('all_stuff', 'can_edit_stuff'), ('some_stuff', 'can_edit_stuff'), ('', 'can_view_stuff'),
+                ('all_stuff', 'can_do_stuff'), ('this_thing', 'can_do_stuff'), ('', 'can_alter_stuff'),
+            ])
+        )
 
         self.assertEquals(
             set(PermAccess.objects.values_list('perm_levels__name', 'perm_levels__perm__name', 'perm_set__name')),
             set([
                 ('all_stuff', 'can_edit_stuff', 'global'), ('', 'can_view_stuff', 'global'),
-                ('some_stuff', 'can_edit_stuff', 'global'), ('some_stuff', 'can_edit_stuff', 'restricted')
+                ('some_stuff', 'can_edit_stuff', 'global'), ('some_stuff', 'can_edit_stuff', 'restricted'),
+                ('', 'can_alter_stuff', 'global'), ('all_stuff', 'can_do_stuff', 'restricted'),
+                ('this_thing', 'can_do_stuff', 'restricted'),
             ])
         )
 

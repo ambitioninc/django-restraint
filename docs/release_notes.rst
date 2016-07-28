@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v0.5.0
+------
+
+* When adding new permissions to existing permissions sets, update_restraint_db will add these new permissions while preserving any permissions already assigned to the permission set
+
 v0.4.0
 ------
 
