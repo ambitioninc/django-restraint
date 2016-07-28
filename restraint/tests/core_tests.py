@@ -232,12 +232,17 @@ class TestRestraintFilterQSet(TestCase):
                 'can_view_stuff': {
                     'display_name': 'Can View Stuff',
                     'levels': constants.BOOLEAN_LEVELS_CONFIG,
+                },
+                'can_access_users_named_foo': {
+                    'display_name': 'Can Foo',
+                    'levels': constants.BOOLEAN_LEVELS_CONFIG,
                 }
             },
             'default_access': {
                 'super': {
                     'can_edit_stuff': ['all_stuff', 'some_stuff'],
                     'can_view_stuff': [constants.BOOLEAN_LEVELS_NAME],
+                    'can_access_users_named_foo': [constants.BOOLEAN_LEVELS_NAME],
                 },
                 'individual': {
                     'can_edit_stuff': ['some_stuff'],
@@ -291,6 +296,36 @@ class TestRestraintFilterQSet(TestCase):
 
         filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
         self.assertEquals(set(filtered_qset), set([]))
+
+    def test_filter_qset_restrict_subset(self):
+        models = [
+            G(User, first_name='foo', last_name='foofington'),
+            G(User, first_name='bar', last_name='barski'),
+            G(User, first_name='foo', last_name='foogeelala'),
+        ]
+        # Make a user that is a superuser and verify they get all of the
+        # super user perms
+        u = G(User, is_superuser=True)
+        r = core.Restraint(u)
+
+        filtered_qset = r.filter_qset(
+            User.objects.all(), 'can_access_users_named_foo', restrict_kwargs={'first_name': 'foo'})
+        self.assertEquals(set(filtered_qset), set(models + [u]))
+
+    def test_filter_qset_restrict_subset_no_perms(self):
+        models = [
+            G(User, first_name='foo', last_name='foofington'),
+            G(User, first_name='bar', last_name='barski'),
+            G(User, first_name='foo', last_name='foogeelala'),
+        ]
+        # Make a user that is a superuser and verify they get all of the
+        # super user perms
+        u = G(User, is_superuser=False)
+        r = core.Restraint(u)
+
+        filtered_qset = r.filter_qset(
+            User.objects.all(), 'can_access_users_named_foo', restrict_kwargs={'first_name': 'foo'})
+        self.assertEquals(set(filtered_qset), set([models[1]] + [u]))
 
 
 class UpdateRestraintDbTest(TestCase):

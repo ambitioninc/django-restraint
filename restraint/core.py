@@ -88,7 +88,7 @@ class Restraint(object):
         """
         return perm in self._perms and level in self._perms[perm] if level else perm in self._perms
 
-    def filter_qset(self, qset, perm):
+    def filter_qset(self, qset, perm, restrict_kwargs=None):
         """
         Given a permission, filter the queryset by its levels.
 
@@ -99,8 +99,12 @@ class Restraint(object):
         :param perm: The permission over which to do the filtering
         """
         if not self.has_perm(perm):
-            # If the user doesnt have the perm, return no data
-            return qset.none()
+            # if this restraint only protects a certain subset of the queryset, return the rest
+            if restrict_kwargs is not None:
+                return qset.exclude(**restrict_kwargs)
+            # else return nothing
+            else:
+                return qset.none()
         elif None in self._perms[perm].values():
             # If any levels are none, return the full queryset
             return qset
