@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v0.5.1
+------
+
+* Filtering querysets can now optionally restrict a subset of a queryset based on a boolean permission, allowing the subset to be defined by arbitrary filter kwargs
+
 v0.5.0
 ------
 
