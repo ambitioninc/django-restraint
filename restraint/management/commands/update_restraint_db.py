@@ -10,15 +10,14 @@ class Command(BaseCommand):
     A management command for updating the restraint permissions based on the
     restraint config.
     """
-    option_list = BaseCommand.option_list + (
-        make_option(
+    def add_arguments(self, parser):
+        parser.add_argument(
             '--flush_default_access',
             action='store_true',
             dest='flush_default_access',
             default=False,
             help='Flush all permission sets before updating'
-        ),
-    )
+        )
 
     def handle(self, *args, **options):
         """
