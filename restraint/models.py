@@ -68,7 +68,7 @@ class PermLevelManager(models.Manager):
 
 @python_2_unicode_compatible
 class PermLevel(models.Model):
-    perm = models.ForeignKey(Perm)
+    perm = models.ForeignKey(Perm, on_delete=models.CASCADE)
     name = models.CharField(max_length=256, blank=True)
     display_name = models.TextField(blank=True)
 
@@ -126,8 +126,8 @@ class PermAccess(models.Model):
     Provides access a list of permission levels for a permission set or for an individual
     user
     """
-    perm_set = models.OneToOneField(PermSet, null=True, default=None)
-    perm_user_type = models.ForeignKey(ContentType, null=True, default=None)
+    perm_set = models.OneToOneField(PermSet, null=True, default=None, on_delete=models.CASCADE)
+    perm_user_type = models.ForeignKey(ContentType, null=True, default=None, on_delete=models.CASCADE)
     perm_user_id = models.PositiveIntegerField(default=0)
     perm_levels = models.ManyToManyField(PermLevel)
 

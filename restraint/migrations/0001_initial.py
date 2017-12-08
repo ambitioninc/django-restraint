@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
@@ -38,7 +39,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('name', models.CharField(max_length=256, blank=True)),
                 ('display_name', models.TextField(blank=True)),
-                ('perm', models.ForeignKey(to='restraint.Perm')),
+                ('perm', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='restraint.Perm')),
             ],
             options={
             },
@@ -68,13 +69,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='permaccess',
             name='perm_set',
-            field=models.OneToOneField(default=None, null=True, to='restraint.PermSet'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, default=None, null=True, to='restraint.PermSet'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='permaccess',
             name='perm_user_type',
-            field=models.ForeignKey(default=None, null=True, to='contenttypes.ContentType'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, default=None, null=True, to='contenttypes.ContentType'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
