@@ -4,11 +4,11 @@
 .. image:: https://coveralls.io/repos/ambitioninc/django-restraint/badge.png?branch=develop
     :target: https://coveralls.io/r/ambitioninc/django-restraint?branch=develop
 
-.. image:: https://pypip.in/v/django-restraint/badge.png
+.. image:: https://img.shields.io/pypi/v/django-restraint.svg
     :target: https://pypi.python.org/pypi/django-restraint/
     :alt: Latest PyPI version
 
-.. image:: https://pypip.in/d/django-restraint/badge.png
+.. image:: https://img.shields.io/pypi/dm/django-restraint.svg
     :target: https://pypi.python.org/pypi/django-restraint/
     :alt: Number of PyPI downloads
 
