@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v1.1.0
+------
+* Add tox
+
 v1.0.0
 ------
 * Remove python 2.7 support
