@@ -40,16 +40,14 @@ def configure_settings():
                 'default': db_config,
             },
             INSTALLED_APPS=(
-                'django.contrib.auth',
                 'django.contrib.contenttypes',
-                'django.contrib.sessions',
-                'django.contrib.admin',
                 'restraint',
                 'restraint.tests',
             ),
             ROOT_URLCONF='restraint.urls',
             DEBUG=False,
             SECRET_KEY='12345',
+            DEFAULT_AUTO_FIELD='django.db.models.AutoField',
             RESTRAINT_CONFIGURATION=(
                 'restraint.tests.configuration.get_configuration'
             )
