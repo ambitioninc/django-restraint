@@ -89,6 +89,17 @@ class PermLevelManager(models.Manager):
 
 
 class PermAccessManager(models.Manager):
+    def set_default_permission_set_access(self, permission_set_name, permission_name, levels):
+        from restraint.models import PermSet, PermAccess, PermLevel
+        permission_access = PermAccess.objects.get_or_create(
+            perm_set=PermSet.objects.get(name=permission_set_name)
+        )[0]
+        permission_levels = PermLevel.objects.filter(
+            perm__name=permission_name,
+            name__in=levels
+        )
+        permission_access.perm_levels.set(permission_levels)
+
     def update_perm_set_access(self, config, new_perms=None, flush_previous_config=False):
         """
         Update the access for private perm sets with a config. The user can optionally flush
