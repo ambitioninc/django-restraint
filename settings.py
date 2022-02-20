@@ -40,6 +40,7 @@ def configure_settings():
                 'default': db_config,
             },
             INSTALLED_APPS=(
+                'django.contrib.auth',
                 'django.contrib.contenttypes',
                 'restraint',
                 'restraint.tests',
