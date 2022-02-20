@@ -1,7 +1,9 @@
 from collections import defaultdict
 from itertools import chain
 
+from django.conf import settings
 from django.db.models import Q
+from django.utils.module_loading import import_string
 
 from restraint import models
 
@@ -10,16 +12,8 @@ from restraint import models
 RESTRAINT_CONFIG = {}
 
 
-def register_restraint_config(restraint_config):
-    RESTRAINT_CONFIG.clear()
-    RESTRAINT_CONFIG.update(restraint_config)
-
-
 def get_restraint_config():
-    if RESTRAINT_CONFIG:
-        return RESTRAINT_CONFIG
-    else:
-        raise RuntimeError('No restraint config has been registered')
+    return import_string(settings.RESTRAINT_CONFIGURATION)()
 
 
 def update_restraint_db(flush_default_access=False):

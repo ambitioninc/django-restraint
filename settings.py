@@ -13,10 +13,10 @@ def configure_settings():
         if test_db is None:
             db_config = {
                 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                'NAME': 'ambition_dev',
-                'USER': 'ambition_dev',
-                'PASSWORD': 'ambition_dev',
-                'HOST': 'localhost'
+                'NAME': 'django_restraint',
+                'USER': os.environ.get('DBUSER', 'ambition_dev'),
+                'PASSWORD': os.environ.get('DBPASS', 'ambition_dev'),
+                'HOST': os.environ.get('DBHOST', 'localhost')
             }
         elif test_db == 'postgres':
             db_config = {
@@ -49,4 +49,8 @@ def configure_settings():
             ),
             ROOT_URLCONF='restraint.urls',
             DEBUG=False,
+            SECRET_KEY='12345',
+            RESTRAINT_CONFIGURATION=(
+                'restraint.tests.configuration.get_configuration'
+            )
         )

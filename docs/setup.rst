@@ -3,16 +3,15 @@ Setup
 
 The Restraint Configuration
 ---------------------------
-Restraint is configured all in one place using :code:`restraint.register_restraint_config`. This function must be called during load time in order for Restraint to be able to perform dynamic permission queries and object-level filtering.
+Restraint is configured all in one place using the :code:`RESTRAINT_CONFIGURATION` django setting.
 
 An example Restraint configuration is provided below. Details of the configuration are outlined in later sections.
 
 
 .. code-block:: python
 
-    from restraint import register_restraint_config
 
-    register_restraint_config({
+    config = {
         'perm_set_getter': perm_set_getter_function,
         'perm_sets': {
             'super': {
@@ -60,8 +59,7 @@ An example Restraint configuration is provided below. Details of the configurati
                 'can_edit_stuff': ['some_stuff', 'only_superusers']
             }
         }
-    })
-
+    }
 
 Defining The Permission Set Getter
 ----------------------------------
