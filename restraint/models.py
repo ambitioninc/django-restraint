@@ -24,6 +24,7 @@ class PermSet(models.Model):
     """
     name = models.CharField(max_length=256, unique=True, blank=True)
     display_name = models.TextField(blank=True)
+    is_private = models.BooleanField(default=False)
 
     objects = PermSetManager()
 
