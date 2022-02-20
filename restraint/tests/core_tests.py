@@ -228,6 +228,21 @@ class TestRestraintFilterQSet(TestCase):
 
 
 class UpdateRestraintDbTest(TestCase):
+    def add_custom_permission_set(self):
+        # Setup a custom permission set
+        custom_permission_set = PermSet.objects.create(
+            name='custom',
+            display_name='Custom',
+            is_private=False
+        )
+
+        # Add some custom default access levels
+        PermAccess.objects.set_default_permission_set_access(
+            permission_set_name=custom_permission_set.name,
+            permission_name='can_edit_stuff',
+            levels=['all_stuff']
+        )
+
     @patch.object(core, 'get_restraint_config')
     def test_full_update_scenario_not_flush_default_access(self, mock_get_restraint_config):
         mock_get_restraint_config.return_value = {
@@ -316,6 +331,7 @@ class UpdateRestraintDbTest(TestCase):
         }
         mock_get_restraint_config.return_value = config
         core.update_restraint_db()
+        self.add_custom_permission_set()
 
         # add permission
         config['perms']['can_do_stuff'] = {
@@ -343,28 +359,59 @@ class UpdateRestraintDbTest(TestCase):
         core.update_restraint_db()
 
         self.assertEquals(
-            set(PermSet.objects.values_list('name', flat=True)), set(['global', 'restricted']))
-
+            set(PermSet.objects.filter(is_private=True).values_list('name', flat=True)),
+            {'global', 'restricted'}
+        )
         self.assertEquals(
-            set(Perm.objects.values_list('name', flat=True)),
-            set(['can_view_stuff', 'can_edit_stuff', 'can_do_stuff', 'can_alter_stuff']))
-
-        self.assertEquals(
-            set(PermLevel.objects.values_list('name', 'perm__name')),
-            set([
-                ('all_stuff', 'can_edit_stuff'), ('some_stuff', 'can_edit_stuff'), ('', 'can_view_stuff'),
-                ('all_stuff', 'can_do_stuff'), ('this_thing', 'can_do_stuff'), ('', 'can_alter_stuff'),
-            ])
+            set(PermSet.objects.all().values_list('name', flat=True)),
+            {'global', 'restricted', 'custom'}
         )
 
         self.assertEquals(
-            set(PermAccess.objects.values_list('perm_levels__name', 'perm_levels__perm__name', 'perm_set__name')),
-            set([
-                ('all_stuff', 'can_edit_stuff', 'global'), ('', 'can_view_stuff', 'global'),
-                ('some_stuff', 'can_edit_stuff', 'global'), ('some_stuff', 'can_edit_stuff', 'restricted'),
-                ('', 'can_alter_stuff', 'global'), ('all_stuff', 'can_do_stuff', 'restricted'),
-                ('this_thing', 'can_do_stuff', 'restricted'),
-            ])
+            set(Perm.objects.values_list('name', flat=True)),
+            {'can_view_stuff', 'can_edit_stuff', 'can_do_stuff', 'can_alter_stuff'}
+        )
+
+        self.assertEquals(
+            list(PermLevel.objects.order_by(
+                'perm__name',
+                'name'
+            ).values_list(
+                'perm__name',
+                'name'
+            )),
+            [
+                ('can_alter_stuff', ''),
+                ('can_do_stuff', 'all_stuff'),
+                ('can_do_stuff', 'this_thing'),
+                ('can_edit_stuff', 'all_stuff'),
+                ('can_edit_stuff', 'some_stuff'),
+                ('can_view_stuff', '')
+            ]
+        )
+
+        self.assertEquals(
+            list(
+                PermAccess.objects.order_by(
+                    'perm_set__name',
+                    'perm_levels__perm__name',
+                    'perm_levels__name'
+                ).values_list(
+                    'perm_set__name',
+                    'perm_levels__perm__name',
+                    'perm_levels__name'
+                )
+            ),
+            [
+                ('custom', 'can_edit_stuff', 'all_stuff'),
+                ('global', 'can_alter_stuff', ''),
+                ('global', 'can_edit_stuff', 'all_stuff'),
+                ('global', 'can_edit_stuff', 'some_stuff'),
+                ('global', 'can_view_stuff', ''),
+                ('restricted', 'can_do_stuff', 'all_stuff'),
+                ('restricted', 'can_do_stuff', 'this_thing'),
+                ('restricted', 'can_edit_stuff', 'some_stuff')
+            ]
         )
 
     @patch.object(core, 'get_restraint_config')
@@ -409,6 +456,7 @@ class UpdateRestraintDbTest(TestCase):
         }
         mock_get_restraint_config.return_value = config
         core.update_restraint_db()
+        self.add_custom_permission_set()
 
         config = {
             'perm_sets': {
@@ -448,16 +496,49 @@ class UpdateRestraintDbTest(TestCase):
         core.update_restraint_db(flush_default_access=True)
 
         self.assertEquals(
-            set(PermSet.objects.values_list('name', flat=True)), set(['global', 'restricted']))
+            set(PermSet.objects.filter(is_private=True).values_list('name', flat=True)),
+            {'global', 'restricted'}
+        )
+        self.assertEquals(
+            set(PermSet.objects.all().values_list('name', flat=True)),
+            {'custom', 'global', 'restricted'}
+        )
 
         self.assertEquals(
-            set(Perm.objects.values_list('name', flat=True)), set(['can_view_stuff', 'can_edit_stuff']))
+            set(Perm.objects.values_list('name', flat=True)),
+            {'can_view_stuff', 'can_edit_stuff'}
+        )
 
         self.assertEquals(
-            set(PermLevel.objects.values_list('name', 'perm__name')),
-            set([('all_stuff', 'can_edit_stuff'), ('some_stuff', 'can_edit_stuff'), ('', 'can_view_stuff')]))
+            list(PermLevel.objects.order_by(
+                'perm__name',
+                'name'
+            ).values_list(
+                'perm__name',
+                'name'
+            )),
+            [
+                ('can_edit_stuff', 'all_stuff'),
+                ('can_edit_stuff', 'some_stuff'),
+                ('can_view_stuff', '')
+            ]
+        )
 
         self.assertEquals(
-            set(PermAccess.objects.values_list('perm_levels__name', 'perm_levels__perm__name', 'perm_set__name')),
-            set([('all_stuff', 'can_edit_stuff', 'global'), (None, None, 'restricted')])
+            list(
+                PermAccess.objects.order_by(
+                    'perm_set__name',
+                    'perm_levels__perm__name',
+                    'perm_levels__name'
+                ).values_list(
+                    'perm_set__name',
+                    'perm_levels__perm__name',
+                    'perm_levels__name'
+                )
+            ),
+            [
+                ('custom', 'can_edit_stuff', 'all_stuff'),
+                ('global', 'can_edit_stuff', 'all_stuff'),
+                ('restricted', None, None)
+            ]
         )
