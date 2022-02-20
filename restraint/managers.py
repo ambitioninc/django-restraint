@@ -6,13 +6,27 @@ from manager_utils import sync
 class PermSetManager(models.Manager):
     def sync_perm_sets(self, perm_sets):
         """
-        Syncs the provided dictionary of perm sets to PermSet models.
+        Syncs all private perm sets the provided dictionary of perm sets to PermSet models.
         """
         from restraint.models import PermSet
         sync(
-            self.get_queryset(),
-            [PermSet(name=name, display_name=config.get('display_name', '')) for name, config in perm_sets.items()],
-            ['name'], ['display_name']
+            queryset=self.get_queryset().filter(
+                is_private=True
+            ),
+            model_objs=[
+                PermSet(
+                    name=name,
+                    display_name=config.get('display_name', ''),
+                    is_private=True
+                )
+                for name, config in perm_sets.items()
+            ],
+            unique_fields=[
+                'name'
+            ],
+            update_fields=[
+                'display_name'
+            ]
         )
 
 
@@ -23,9 +37,21 @@ class PermManager(models.Manager):
         """
         from restraint.models import Perm
         return sync(
-            self.get_queryset(),
-            [Perm(name=name, display_name=config.get('display_name', '')) for name, config in perms.items()],
-            ['name'], ['display_name'], return_upserts_distinct=True
+            queryset=self.get_queryset(),
+            model_objs=[
+                Perm(
+                    name=name,
+                    display_name=config.get('display_name', '')
+                )
+                for name, config in perms.items()
+            ],
+            unique_fields=[
+                'name'
+            ],
+            update_fields=[
+                'display_name'
+            ],
+            return_upserts_distinct=True
         )
 
 
@@ -36,26 +62,48 @@ class PermLevelManager(models.Manager):
         to PermLevel objects in the database.
         """
         from restraint.models import Perm, PermLevel
-        perm_objs = {p.name: p for p in Perm.objects.all()}
+        perm_objs = {
+            p.name: p
+            for p in Perm.objects.all()
+        }
         perm_levels = []
         for perm, perm_config in perms.items():
             assert(perm_config['levels'])
-            for l, level_config in perm_config['levels'].items():
-                perm_levels.append(
-                    PermLevel(perm=perm_objs[perm], name=l, display_name=level_config.get('display_name', '')))
-        sync(self.get_queryset(), perm_levels, ['name', 'perm'], ['display_name'])
+            for level, level_config in perm_config['levels'].items():
+                perm_levels.append(PermLevel(
+                    perm=perm_objs[perm],
+                    name=level,
+                    display_name=level_config.get('display_name', '')
+                ))
+        sync(
+            queryset=self.get_queryset(),
+            model_objs=perm_levels,
+            unique_fields=[
+                'name',
+                'perm'
+            ],
+            update_fields=[
+                'display_name'
+            ]
+        )
 
 
 class PermAccessManager(models.Manager):
     def update_perm_set_access(self, config, new_perms=None, flush_previous_config=False):
         """
-        Update the access for perm sets with a config. The user can optionally flush
+        Update the access for private perm sets with a config. The user can optionally flush
         the previous config and set it to the new one.
         """
+
+        # Do model imports to avoid circular
         from restraint.models import PermSet, PermAccess, PermLevel
+
+        # Ensure that new perms is not none
         if new_perms is None:
             new_perms = []
-        for perm_set in PermSet.objects.all():
+
+        # Loop over each private permission set
+        for perm_set in PermSet.objects.filter(is_private=True):
             perm_access, created = PermAccess.objects.get_or_create(perm_set=perm_set)
             perm_access_levels = []
             for perm, perm_levels in config.get(perm_set.name, {}).items():
