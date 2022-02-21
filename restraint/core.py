@@ -1,25 +1,15 @@
 from collections import defaultdict
 from itertools import chain
 
+from django.conf import settings
 from django.db.models import Q
+from django.utils.module_loading import import_string
 
 from restraint import models
 
 
-# A global variable for holding the configuration of django restraint
-RESTRAINT_CONFIG = {}
-
-
-def register_restraint_config(restraint_config):
-    RESTRAINT_CONFIG.clear()
-    RESTRAINT_CONFIG.update(restraint_config)
-
-
 def get_restraint_config():
-    if RESTRAINT_CONFIG:
-        return RESTRAINT_CONFIG
-    else:
-        raise RuntimeError('No restraint config has been registered')
+    return import_string(settings.RESTRAINT_CONFIGURATION)()
 
 
 def update_restraint_db(flush_default_access=False):
@@ -70,9 +60,9 @@ class Restraint(object):
             perm_levels = perm_levels.filter(perm__name__in=which_perms)
 
         self._perms = defaultdict(dict)
-        for l in perm_levels:
-            self._perms[l.perm.name].update({
-                l.name: self._config['perms'][l.perm.name]['levels'][l.name]['id_filter']
+        for level in perm_levels:
+            self._perms[level.perm.name].update({
+                level.name: self._config['perms'][level.perm.name]['levels'][level.name]['id_filter']
             })
 
     def has_perm(self, perm, level=None):
@@ -110,4 +100,4 @@ class Restraint(object):
             return qset
         else:
             # Filter the queryset by the union of all filters
-            return qset.filter(id__in=set(chain(*[l(self._user) for l in self._perms[perm].values()])))
+            return qset.filter(id__in=set(chain(*[level(self._user) for level in self._perms[perm].values()])))

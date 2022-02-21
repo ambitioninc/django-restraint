@@ -25,6 +25,28 @@ class PermLevelTest(TestCase):
 
 
 class PermAccessTest(TestCase):
+    def test_set_default(self):
+        """
+        Test setting default access
+        """
+        permission_set = G(PermSet, name='my_set')
+        permission_level = G(PermLevel, perm=F(name='my_perm'), name='my_level')
+        PermAccess.objects.set_default(
+            permission_set_name=permission_set.name,
+            permission_name='my_perm',
+            levels=[permission_level.name]
+        )
+        pa = PermAccess.objects.get(perm_user_id=0, perm_user_type=None, perm_set=permission_set)
+        self.assertEquals(list(pa.perm_levels.all()), [permission_level])
+
+        # Set defaults to none
+        PermAccess.objects.set_default(
+            permission_set_name=permission_set.name,
+            permission_name='my_perm',
+        )
+        pa = PermAccess.objects.get(perm_user_id=0, perm_user_type=None, perm_set=permission_set)
+        self.assertEquals(list(pa.perm_levels.all()), [])
+
     def test_add_individual_access_level_exists(self):
         """
         Tests adding an individual permission to a user.

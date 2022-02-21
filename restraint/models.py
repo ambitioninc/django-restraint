@@ -1,73 +1,95 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from manager_utils import sync
 
 from six import python_2_unicode_compatible
 
-
-class PermSetManager(models.Manager):
-    def sync_perm_sets(self, perm_sets):
-        """
-        Syncs the provided dictionary of perm sets to PermSet models.
-        """
-        sync(
-            self.get_queryset(),
-            [PermSet(name=name, display_name=config.get('display_name', '')) for name, config in perm_sets.items()],
-            ['name'], ['display_name'])
+from restraint.managers import PermSetManager, PermManager, PermLevelManager, PermAccessManager
 
 
 @python_2_unicode_compatible
 class PermSet(models.Model):
+    """
+    This is essentially a group that has a name.
+    Each PermSet will have a PermAccess associated with it that will contain the groups full permissions
+    The permissions are indicated through PermAccess.perm_levels.
+
+    Fields:
+     - Name
+     - Display_name
+     - Perm_access (One To One to PermAccess) For this set, this user type has these levels
+
+    Example:
+     - Name: manager
+     - Display Name: Managers
+    """
     name = models.CharField(max_length=256, unique=True, blank=True)
     display_name = models.TextField(blank=True)
+    is_private = models.BooleanField(default=False)
 
     objects = PermSetManager()
 
     def __str__(self):
-        return self.display_name
-
-
-class PermManager(models.Manager):
-    def sync_perms(self, perms):
-        """
-        Syncs the perms to Perm models.
-        """
-        return sync(
-            self.get_queryset(),
-            [Perm(name=name, display_name=config.get('display_name', '')) for name, config in perms.items()],
-            ['name'], ['display_name'], return_upserts_distinct=True)
+        return f'{self.display_name}:{self.name}'
 
 
 @python_2_unicode_compatible
 class Perm(models.Model):
+    """
+    This is the actual permission name specific to what each app will add, for example competition_all.
+
+    Fields:
+     - Name
+     - Display_name
+
+    Example:
+     - Name: can_edit_accounts
+     - Display Name: Users: Edit
+     - Levels (Reverse Many To Many to PermLevel)
+    """
     name = models.CharField(max_length=256, unique=True, blank=True)
     display_name = models.TextField(blank=True)
 
     objects = PermManager()
 
     def __str__(self):
-        return self.display_name
-
-
-class PermLevelManager(models.Manager):
-    def sync_perm_levels(self, perms):
-        """
-        Given a dictionary of perms that map to perm levels, sync the perm levels
-        to PermLevel objects in the database.
-        """
-        perm_objs = {p.name: p for p in Perm.objects.all()}
-        perm_levels = []
-        for perm, perm_config in perms.items():
-            assert(perm_config['levels'])
-            for l, level_config in perm_config['levels'].items():
-                perm_levels.append(
-                    PermLevel(perm=perm_objs[perm], name=l, display_name=level_config.get('display_name', '')))
-
-        sync(self.get_queryset(), perm_levels, ['name', 'perm'], ['display_name'])
+        return f'{self.display_name}:{self.name}'
 
 
 @python_2_unicode_compatible
 class PermLevel(models.Model):
+    """
+    Each specific Perm can have different levels of access for the same permission.
+    A blank level indicates that its either a yes/no decision
+    Other options might look like all, created_by, etc...
+    This should be unique and handled by each app independently
+
+    Fields:
+     - Perm (Foreign Key)
+     - Name
+     - Display_name
+
+    Example:
+    This is an example of a permission that can have multiple levels of permissions.
+    Let's take the example permission of can_edit_accounts with three different permission levels:
+     - Created_by: Can only edit accounts created by the user tied to the permission
+     - Own: Can only edit their own account
+     - Under: Can edit accounts that they manage
+
+    Created By:
+     - Permission: can_edit_accounts
+     - Name: created_by
+     - Display Name: Can Edit Users Created
+
+    Own:
+     - Permission: can_edit_accounts
+     - Name: own
+     - Display Name: Can Edit Own Account
+
+    Under:
+     - Permission: can_edit_accounts
+     - Name: under
+     - Display Name: Can Edit Subordinate Accounts
+    """
     perm = models.ForeignKey(Perm, on_delete=models.CASCADE)
     name = models.CharField(max_length=256, blank=True)
     display_name = models.TextField(blank=True)
@@ -78,53 +100,33 @@ class PermLevel(models.Model):
         unique_together = ('perm', 'name')
 
     def __str__(self):
-        return self.display_name
-
-
-class PermAccessManager(models.Manager):
-    def update_perm_set_access(self, config, new_perms=[], flush_previous_config=False):
-        """
-        Update the access for perm sets with a config. The user can optionally flush
-        the previous config and set it to the new one.
-        """
-        for perm_set in PermSet.objects.all():
-            perm_access, created = PermAccess.objects.get_or_create(perm_set=perm_set)
-            perm_access_levels = []
-            for perm, perm_levels in config.get(perm_set.name, {}).items():
-                # If we are not flushing the previous config, continue if the perm not among the newly created perms
-                # this is necessary because perm access is mutable; We don't want to destroy modifications made to
-                # existing permissions
-                if not created and not flush_previous_config and perm not in [p.name for p in new_perms]:
-                    continue
-                assert(perm_levels)
-                perm_access_levels.extend(PermLevel.objects.filter(perm__name=perm, name__in=perm_levels))
-
-            if flush_previous_config:
-                perm_access.perm_levels.clear()
-            perm_access.perm_levels.add(*perm_access_levels)
-
-    def add_individual_access(self, user, perm_name, level_name):
-        """
-        Given a user, a permission name, and the name of the level, add the level in the permission access for
-        the individual user.
-        """
-        pa, created = PermAccess.objects.get_or_create(
-            perm_user_id=user.id, perm_user_type=ContentType.objects.get_for_model(user))
-        pa.perm_levels.add(PermLevel.objects.get(perm__name=perm_name, name=level_name))
-
-    def remove_individual_access(self, user, perm_name, level_name):
-        """
-        Given a user, a permission name, and the name of the level, remove the level in the permission access for
-        the individual user.
-        """
-        pa = PermAccess.objects.get(perm_user_id=user.id, perm_user_type=ContentType.objects.get_for_model(user))
-        pa.perm_levels.remove(PermLevel.objects.get(perm__name=perm_name, name=level_name))
+        return f'{self.name}:{self.display_name}[PERM]{self.perm}'
 
 
 class PermAccess(models.Model):
     """
     Provides access a list of permission levels for a permission set or for an individual
-    user
+    user.
+
+    This is what is used to determine what groups or individuals have access to.
+    The access is determined by what levels are assigned to each group or individual.
+    This can be found in the many to many relationship to levels `PermAccess.perm_levels.all()`
+
+    Fields:
+     - PermSet (One To One)
+     - Perm_user_type (ContentType, Generic Foreign Key)
+     - Perm_user_id (id of the object associated with the content type)
+     - Perm_levels (Many to Many PermLevel)
+
+    Example:
+    An example would be for the manager permission set and allowing any manager to have access to two levels,
+    own and under so they can edit their own account and any subordinate accounts.
+     - Perm Set: manager
+     - User Type: None
+     - User Id: 0
+     - Perm Levels
+        - Own
+        - Under
     """
     perm_set = models.OneToOneField(PermSet, null=True, default=None, on_delete=models.CASCADE)
     perm_user_type = models.ForeignKey(ContentType, null=True, default=None, on_delete=models.CASCADE)
@@ -135,3 +137,6 @@ class PermAccess(models.Model):
         unique_together = ('perm_user_type', 'perm_user_id')
 
     objects = PermAccessManager()
+
+    def __str__(self):  # pragma: no cover
+        return f'[PERM_SET]{self.perm_set}[USER_TYPE]{self.perm_user_type}[USER_ID]{self.perm_user_id}'
