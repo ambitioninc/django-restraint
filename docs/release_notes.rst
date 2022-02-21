@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+v2.0.0
+------
+* Removed `RESTRAINT_CONFIG` global variable, replaced with `get_restraint_config` method
+* Removed `register_restraint_config` method, replaced with `RESTRAINT_CONFIGURATION` django setting
+* Added `is_private` flag to PermSet model
+
 v1.2.0
 ------
 * Python 3.7
