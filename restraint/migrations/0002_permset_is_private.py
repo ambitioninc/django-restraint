@@ -3,6 +3,13 @@
 from django.db import migrations, models
 
 
+def update_private_permission_sets(apps, schema_editor):
+    PermSet = apps.get_model('restraint', 'PermSet')
+    for perm_set in PermSet.objects.all():
+        perm_set.is_private = True
+        perm_set.save(update_fields=['is_private'])
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -15,4 +22,5 @@ class Migration(migrations.Migration):
             name='is_private',
             field=models.BooleanField(default=False),
         ),
+        migrations.RunPython(update_private_permission_sets)
     ]
