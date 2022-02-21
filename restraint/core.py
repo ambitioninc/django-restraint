@@ -8,10 +8,6 @@ from django.utils.module_loading import import_string
 from restraint import models
 
 
-# A global variable for holding the configuration of django restraint
-RESTRAINT_CONFIG = {}
-
-
 def get_restraint_config():
     return import_string(settings.RESTRAINT_CONFIGURATION)()
 

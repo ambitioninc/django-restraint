@@ -89,16 +89,25 @@ class PermLevelManager(models.Manager):
 
 
 class PermAccessManager(models.Manager):
-    def set_default_permission_set_access(self, permission_set_name, permission_name, levels):
+    def set_default(self, permission_set_name, permission_name, levels=None):
+        """
+        Sets default levels for a permission for a permission set
+        :param permission_set_name: The name of the permission set
+        :param permission_name: The name of the permission
+        :param levels: A list of levels
+        """
         from restraint.models import PermSet, PermAccess, PermLevel
         permission_access = PermAccess.objects.get_or_create(
             perm_set=PermSet.objects.get(name=permission_set_name)
         )[0]
-        permission_levels = PermLevel.objects.filter(
-            perm__name=permission_name,
-            name__in=levels
-        )
-        permission_access.perm_levels.set(permission_levels)
+        if levels:
+            permission_levels = PermLevel.objects.filter(
+                perm__name=permission_name,
+                name__in=levels
+            )
+            permission_access.perm_levels.set(permission_levels)
+        else:
+            permission_access.perm_levels.clear()
 
     def update_perm_set_access(self, config, new_perms=None, flush_previous_config=False):
         """

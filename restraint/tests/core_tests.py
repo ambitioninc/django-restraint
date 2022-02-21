@@ -237,7 +237,7 @@ class UpdateRestraintDbTest(TestCase):
         )
 
         # Add some custom default access levels
-        PermAccess.objects.set_default_permission_set_access(
+        PermAccess.objects.set_default(
             permission_set_name=custom_permission_set.name,
             permission_name='can_edit_stuff',
             levels=['all_stuff']
