@@ -60,9 +60,9 @@ class Restraint(object):
             perm_levels = perm_levels.filter(perm__name__in=which_perms)
 
         self._perms = defaultdict(dict)
-        for l in perm_levels:
-            self._perms[l.perm.name].update({
-                l.name: self._config['perms'][l.perm.name]['levels'][l.name]['id_filter']
+        for level in perm_levels:
+            self._perms[level.perm.name].update({
+                level.name: self._config['perms'][level.perm.name]['levels'][level.name]['id_filter']
             })
 
     def has_perm(self, perm, level=None):
@@ -100,4 +100,4 @@ class Restraint(object):
             return qset
         else:
             # Filter the queryset by the union of all filters
-            return qset.filter(id__in=set(chain(*[l(self._user) for l in self._perms[perm].values()])))
+            return qset.filter(id__in=set(chain(*[level(self._user) for level in self._perms[perm].values()])))

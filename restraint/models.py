@@ -36,7 +36,7 @@ class PermSet(models.Model):
 class Perm(models.Model):
     """
     This is the actual permission name specific to what each app will add, for example competition_all.
-    
+
     Fields:
      - Name
      - Display_name
@@ -69,7 +69,8 @@ class PermLevel(models.Model):
      - Display_name
 
     Example:
-    This is an example of a permission that can have multiple levels of permissions. Let's take the example permission of can_edit_accounts with three different permission levels:
+    This is an example of a permission that can have multiple levels of permissions.
+    Let's take the example permission of can_edit_accounts with three different permission levels:
      - Created_by: Can only edit accounts created by the user tied to the permission
      - Own: Can only edit their own account
      - Under: Can edit accounts that they manage
@@ -118,7 +119,8 @@ class PermAccess(models.Model):
      - Perm_levels (Many to Many PermLevel)
 
     Example:
-    An example would be for the manager permission set and allowing any manager to have access to two levels, own and under so they can edit their own account and any subordinate accounts.
+    An example would be for the manager permission set and allowing any manager to have access to two levels,
+    own and under so they can edit their own account and any subordinate accounts.
      - Perm Set: manager
      - User Type: None
      - User Id: 0
