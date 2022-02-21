@@ -3,65 +3,66 @@ Setup
 
 The Restraint Configuration
 ---------------------------
-Restraint is configured all in one place using :code:`restraint.register_restraint_config`. This function must be called during load time in order for Restraint to be able to perform dynamic permission queries and object-level filtering.
+Restraint is configured all in one place using the :code:`RESTRAINT_CONFIGURATION` django setting.
+This should be a string path to a method that will return the fully qualified restraint config.
 
 An example Restraint configuration is provided below. Details of the configuration are outlined in later sections.
 
 
 .. code-block:: python
 
-    from restraint import register_restraint_config
+    RESTRAINT_CONFIGURATION = 'app.permissions.get_restraint_config'
 
-    register_restraint_config({
-        'perm_set_getter': perm_set_getter_function,
-        'perm_sets': {
-            'super': {
-                'display_name': 'Super',
+    def get_restraint_config():
+        return {
+            'perm_set_getter': perm_set_getter_function,
+            'perm_sets': {
+                'super': {
+                    'display_name': 'Super',
+                },
+                'individual': {
+                    'display_name': 'Individual',
+                },
+                'staff': {
+                    'display_name': 'Staff'
+                }
             },
-            'individual': {
-                'display_name': 'Individual',
-            },
-            'staff': {
-                'display_name': 'Staff'
-            }
-        },
-        'perms': {
-            'can_edit_stuff': {
-                'display_name': 'Can Edit Stuff',
-                'levels': {
-                    'all_stuff': {
-                        'display_name': 'All Stuff',
-                        'id_filter': None,
-                    },
-                    'some_stuff': {
-                        'display_name': 'Some Stuff',
-                        'id_filter': lambda a: User.objects.filter(id=a.id).values_list('id', flat=True),
-                    },
-                    'only_superusers': {
-                        'display_name': 'Only Superusers',
-                        'id_filter': lambda a: User.objects.filter(is_superuser=True).values_list('id', flat=True),
+            'perms': {
+                'can_edit_stuff': {
+                    'display_name': 'Can Edit Stuff',
+                    'levels': {
+                        'all_stuff': {
+                            'display_name': 'All Stuff',
+                            'id_filter': None,
+                        },
+                        'some_stuff': {
+                            'display_name': 'Some Stuff',
+                            'id_filter': lambda a: User.objects.filter(id=a.id).values_list('id', flat=True),
+                        },
+                        'only_superusers': {
+                            'display_name': 'Only Superusers',
+                            'id_filter': lambda a: User.objects.filter(is_superuser=True).values_list('id', flat=True),
+                        },
                     },
                 },
+                'can_view_stuff': {
+                    'display_name': 'Can View Stuff',
+                    'levels': constants.BOOLEAN_LEVELS_CONFIG,
+                }
             },
-            'can_view_stuff': {
-                'display_name': 'Can View Stuff',
-                'levels': constants.BOOLEAN_LEVELS_CONFIG,
-            }
-        },
-        'default_access': {
-            'super': {
-                'can_edit_stuff': ['all_stuff', 'some_stuff'],
-                'can_view_stuff': [constants.BOOLEAN_LEVELS_NAME],
-            },
-            'individual': {
-                'can_edit_stuff': ['some_stuff'],
-            },
-            'staff': {
-                'can_edit_stuff': ['some_stuff', 'only_superusers']
+            'default_access': {
+                'super': {
+                    'can_edit_stuff': ['all_stuff', 'some_stuff'],
+                    'can_view_stuff': [constants.BOOLEAN_LEVELS_NAME],
+                },
+                'individual': {
+                    'can_edit_stuff': ['some_stuff'],
+                },
+                'staff': {
+                    'can_edit_stuff': ['some_stuff', 'only_superusers']
+                }
             }
         }
-    })
-
 
 Defining The Permission Set Getter
 ----------------------------------
