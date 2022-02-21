@@ -138,5 +138,5 @@ class PermAccess(models.Model):
 
     objects = PermAccessManager()
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return f'[PERM_SET]{self.perm_set}[USER_TYPE]{self.perm_user_type}[USER_ID]{self.perm_user_id}'

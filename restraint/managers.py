@@ -119,7 +119,7 @@ class PermAccessManager(models.Manager):
         from restraint.models import PermSet, PermAccess, PermLevel
 
         # Ensure that new perms is not none
-        if new_perms is None:
+        if new_perms is None:  # pragma: no cover
             new_perms = []
 
         # Loop over each private permission set
