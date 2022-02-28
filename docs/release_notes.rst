@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v2.0.1
+------
+* Added `assign_default_permissions_from_permission_set` to `PermAccess` manager
+
 v2.0.0
 ------
 * Removed `RESTRAINT_CONFIG` global variable, replaced with `get_restraint_config` method
