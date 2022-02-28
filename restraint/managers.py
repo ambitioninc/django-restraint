@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, transaction
 from manager_utils import sync
 
 
@@ -168,3 +168,25 @@ class PermAccessManager(models.Manager):
             perm__name=perm_name,
             name=level_name
         ))
+
+    @transaction.atomic
+    def assign_default_permissions_from_permission_set(self, to_permission_set, from_permission_set):
+        """
+        Create default permission access for a permission set from another permission set
+        """
+
+        # Local imports to avoid circular dependency
+        from restraint.models import PermAccess
+
+        # Get the permission access
+        to_permission_set_access, to_permission_set_access_created = PermAccess.objects.get_or_create(
+            perm_set=to_permission_set
+        )
+        from_permission_set_access = PermAccess.objects.filter(perm_set=from_permission_set).first()
+
+        # If we did not create the permission access, do nothing
+        if not to_permission_set_access_created or from_permission_set_access is None:
+            return False
+
+        # Use the same levels as the from access
+        to_permission_set_access.perm_levels.set(from_permission_set_access.perm_levels.all())
