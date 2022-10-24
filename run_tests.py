@@ -19,7 +19,7 @@ if django.VERSION[1] >= 7:
 from django_nose import NoseTestSuiteRunner
 
 
-def run_tests(*test_args, **kwargs):
+def run(*test_args, **kwargs):
     if not test_args:
         test_args = ['restraint']
 
@@ -36,4 +36,4 @@ if __name__ == '__main__':
     parser.add_option('--verbosity', dest='verbosity', action='store', default=1, type=int)
     (options, args) = parser.parse_args()
 
-    run_tests(*args, **options.__dict__)
+    run(*args, **options.__dict__)
