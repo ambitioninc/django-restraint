@@ -3,6 +3,7 @@ from itertools import chain
 
 from django.conf import settings
 from django.db.models import Q
+from django.utils.functional import cached_property
 from django.utils.module_loading import import_string
 
 from restraint import models
@@ -24,6 +25,20 @@ def update_restraint_db(flush_default_access=False):
     models.PermAccess.objects.update_perm_set_access(config.get('default_access', {}), new_perms, flush_default_access)
 
 
+def has_permission(user, user_permissions, permission, level):
+    """
+    The default permission checker.
+
+    Returns true if the restraint object has the perm. If a level is not specified, it returns
+    true if that perm exists for any level.
+    """
+    return (
+        permission in user_permissions and level in user_permissions[permission]
+        if level
+        else permission in user_permissions
+    )
+
+
 class Restraint(object):
     """
     The primary way of accessing permissions. The programmer loads a restraint object with the
@@ -41,42 +56,52 @@ class Restraint(object):
         :type which_perms: list
         :param which_perms: The permissions to be loaded for the user, or all permissions if None.
         """
+
+        # Save a reference to the config
         self._config = get_restraint_config()
+
+        # Save a reference to the user
         self._user = user
-        self._load_perms(user, which_perms)
 
-    @property
+        # Save a reference wo which perms we loaded
+        self._which_perms = which_perms
+
+        # Set the permission checker method
+        self._permission_checker = has_permission
+        if self._config.get('perm_checker'):
+            self._permission_checker = import_string(self._config.get('perm_checker'))
+
+    @cached_property
     def perms(self):
-        return self._perms
-
-    def _load_perms(self, account, which_perms):
-        perm_set_names = self._config['perm_set_getter'](account)
+        """
+        Load and cache the permissions associated with the user
+        """
+        perm_set_names = self._config['perm_set_getter'](self._user)
         perm_levels = models.PermLevel.objects.filter(
             Q(permaccess__perm_set__name__in=perm_set_names) | Q(
-                permaccess__perm_user_id=account.id,
-                permaccess__perm_user_type__app_label=account._meta.app_label,
-                permaccess__perm_user_type__model=account._meta.model_name)).select_related('perm')
-        if which_perms:
-            perm_levels = perm_levels.filter(perm__name__in=which_perms)
+                permaccess__perm_user_id=self._user.id,
+                permaccess__perm_user_type__app_label=self._user._meta.app_label,
+                permaccess__perm_user_type__model=self._user._meta.model_name)).select_related('perm')
+        if self._which_perms:
+            perm_levels = perm_levels.filter(perm__name__in=self._which_perms)
 
-        self._perms = defaultdict(dict)
+        perms = defaultdict(dict)
         for level in perm_levels:
-            self._perms[level.perm.name].update({
+            perms[level.perm.name].update({
                 level.name: self._config['perms'][level.perm.name]['levels'][level.name]['id_filter']
             })
+        return perms
 
     def has_perm(self, perm, level=None):
         """
-        Returns true if the restraint object has the perm. If a level is not specified, it returns
-        true if that perm exists for any level.
-
-        :type perm: string
-        :param perm: The permission to check
-
-        :type level: string
-        :param level: The level to check, or any level if None
+        Call the configured permission checker
         """
-        return perm in self._perms and level in self._perms[perm] if level else perm in self._perms
+        return self._permission_checker(
+            user=self._user,
+            user_permissions=self.perms,
+            permission=perm,
+            level=level
+        )
 
     def filter_qset(self, qset, perm, restrict_kwargs=None):
         """
@@ -95,9 +120,9 @@ class Restraint(object):
             # else return nothing
             else:
                 return qset.none()
-        elif None in self._perms[perm].values():
+        elif None in self.perms[perm].values():
             # If any levels are none, return the full queryset
             return qset
         else:
             # Filter the queryset by the union of all filters
-            return qset.filter(id__in=set(chain(*[level(self._user) for level in self._perms[perm].values()])))
+            return qset.filter(id__in=set(chain(*[level(self._user) for level in self.perms[perm].values()])))
