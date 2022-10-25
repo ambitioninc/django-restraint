@@ -96,15 +96,17 @@ class Restraint(object):
         """
         Call the configured permission checker
         """
-        return any([
-            permission_checker(
+        # Try and find the first one that passes
+        # Do this in a loop to avoid additional checks when not necessary
+        for permission_checker in self._permission_checkers:
+            if permission_checker(
                 user=self._user,
                 user_permissions=self.perms,
                 permission=perm,
                 level=level
-            )
-            for permission_checker in self._permission_checkers
-        ])
+            ):
+                return True
+        return False
 
     def filter_qset(self, qset, perm, restrict_kwargs=None):
         """
