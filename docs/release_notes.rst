@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v2.1.0
+------
+* Added `perm_checker` option to the `RESTRAINT_CONFIG` to allow for a custom permission checker
+
 v2.0.1
 ------
 * Added `assign_default_permissions_from_permission_set` to `PermAccess` manager

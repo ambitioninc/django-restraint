@@ -68,7 +68,7 @@ class PermLevelManager(models.Manager):
         }
         perm_levels = []
         for perm, perm_config in perms.items():
-            assert(perm_config['levels'])
+            assert perm_config['levels']
             for level, level_config in perm_config['levels'].items():
                 perm_levels.append(PermLevel(
                     perm=perm_objs[perm],
@@ -132,7 +132,7 @@ class PermAccessManager(models.Manager):
                 # existing permissions
                 if not created and not flush_previous_config and perm not in [p.name for p in new_perms]:
                     continue
-                assert(perm_levels)
+                assert perm_levels
                 perm_access_levels.extend(PermLevel.objects.filter(perm__name=perm, name__in=perm_levels))
 
             if flush_previous_config:
