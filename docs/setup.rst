@@ -94,7 +94,7 @@ The :code:`perm_checker` key in the configuration points to a function that allo
     def custom_permission_checker(user, user_permissions, permission, level):
         if user.is_superuser:
             return True
-        return has_permission(user, user_permissions, permission, level)
+        return False
 
 
 
