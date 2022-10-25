@@ -69,7 +69,7 @@ class Restraint(object):
         # Set the permission checkers
         self._permission_checkers = [has_permission]
         if self._config.get('perm_checker'):
-            self._permission_checkers.append(import_string(self._config.get('perm_checker')))
+            self._permission_checkers.append(self._config.get('perm_checker'))
 
     @cached_property
     def perms(self):

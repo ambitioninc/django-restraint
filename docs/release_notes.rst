@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v2.1.1
+------
+* Fix for `perm_checker` being a method and not a string
+
 v2.1.0
 ------
 * Added `perm_checker` option to the `RESTRAINT_CONFIG` to allow for a custom permission checker
