@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v2.1.2
+------
+* When checking for permissions return early if the user has access
+
 v2.1.1
 ------
 * Fix for `perm_checker` being a method and not a string
