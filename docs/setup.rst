@@ -16,6 +16,7 @@ An example Restraint configuration is provided below. Details of the configurati
     def get_restraint_config():
         return {
             'perm_set_getter': perm_set_getter_function,
+            'perm_checker': perm_checker_function,
             'perm_sets': {
                 'super': {
                     'display_name': 'Super',
@@ -80,6 +81,21 @@ The :code:`perm_set_getter` key in the configuration points to a function that t
 
 
 In this example, the user object is a Django :code:`User` model, and the perm_set_getter function returns *individual*, *super*, or *staff* permission sets based on the contents of the user object.
+
+
+Defining The Permission Checker
+-------------------------------
+This is optional if you do not need any extra checks.
+
+The :code:`perm_checker` key in the configuration points to a function that allows a custom check of permissions.
+
+.. code-block:: python
+
+    def custom_permission_checker(user, user_permissions, permission, level):
+        if user.is_superuser:
+            return True
+        return False
+
 
 
 Defining Permission Sets

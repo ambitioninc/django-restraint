@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
 from mock import patch, Mock
+from mock.mock import PropertyMock
 
 from restraint import core, constants
 from restraint.models import PermSet, Perm, PermLevel, PermAccess
@@ -93,10 +94,9 @@ class TestRestraintLoadPerms(TestCase):
 
 
 class TestRestraintHasPerms(SimpleTestCase):
-    @patch.object(core.Restraint, '_load_perms', spec_set=True)
-    def test_has_perm_w_level_true(self, mock_load_perms):
-        r = core.Restraint(Mock())
-        r._perms = {
+    @patch.object(core.Restraint, 'perms', new_callable=PropertyMock)
+    def test_has_perm_w_level_true(self, mock_perms):
+        mock_perms.return_value = {
             'can_view_stuff': {
                 '': None,
             },
@@ -105,12 +105,12 @@ class TestRestraintHasPerms(SimpleTestCase):
                 'some_stuff': None,
             }
         }
+        r = core.Restraint(Mock())
         self.assertTrue(r.has_perm('can_edit_stuff', 'all_stuff'))
 
-    @patch.object(core.Restraint, '_load_perms', spec_set=True)
-    def test_has_perm_w_level_false(self, mock_load_perms):
-        r = core.Restraint(Mock())
-        r._perms = {
+    @patch.object(core.Restraint, 'perms', new_callable=PropertyMock)
+    def test_has_perm_w_level_false(self, mock_perms):
+        mock_perms.return_value = {
             'can_view_stuff': {
                 '': None,
             },
@@ -119,12 +119,12 @@ class TestRestraintHasPerms(SimpleTestCase):
                 'some_stuff': None,
             }
         }
+        r = core.Restraint(Mock())
         self.assertFalse(r.has_perm('can_edit_stuff', 'no_stuff'))
 
-    @patch.object(core.Restraint, '_load_perms', spec_set=True)
-    def test_has_perm_wo_level_true(self, mock_load_perms):
-        r = core.Restraint(Mock())
-        r._perms = {
+    @patch.object(core.Restraint, 'perms', new_callable=PropertyMock)
+    def test_has_perm_wo_level_true(self, mock_perms):
+        mock_perms.return_value = {
             'can_view_stuff': {
                 '': None,
             },
@@ -133,12 +133,12 @@ class TestRestraintHasPerms(SimpleTestCase):
                 'some_stuff': None,
             }
         }
+        r = core.Restraint(Mock())
         self.assertTrue(r.has_perm('can_edit_stuff'))
 
-    @patch.object(core.Restraint, '_load_perms', spec_set=True)
-    def test_has_perm_wo_level_false(self, mock_load_perms):
-        r = core.Restraint(Mock())
-        r._perms = {
+    @patch.object(core.Restraint, 'perms', new_callable=PropertyMock)
+    def test_has_perm_wo_level_false(self, mock_perms):
+        mock_perms.return_value = {
             'can_view_stuff': {
                 '': None,
             },
@@ -147,6 +147,7 @@ class TestRestraintHasPerms(SimpleTestCase):
                 'some_stuff': None,
             }
         }
+        r = core.Restraint(Mock())
         self.assertFalse(r.has_perm('can_mess_with_stuff'))
 
 
