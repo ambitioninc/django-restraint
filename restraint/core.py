@@ -66,10 +66,10 @@ class Restraint(object):
         # Save a reference wo which perms we loaded
         self._which_perms = which_perms
 
-        # Set the permission checker method
-        self._permission_checker = has_permission
+        # Set the permission checkers
+        self._permission_checkers = [has_permission]
         if self._config.get('perm_checker'):
-            self._permission_checker = import_string(self._config.get('perm_checker'))
+            self._permission_checkers.append(import_string(self._config.get('perm_checker')))
 
     @cached_property
     def perms(self):
@@ -96,12 +96,15 @@ class Restraint(object):
         """
         Call the configured permission checker
         """
-        return self._permission_checker(
-            user=self._user,
-            user_permissions=self.perms,
-            permission=perm,
-            level=level
-        )
+        return any([
+            permission_checker(
+                user=self._user,
+                user_permissions=self.perms,
+                permission=perm,
+                level=level
+            )
+            for permission_checker in self._permission_checkers
+        ])
 
     def filter_qset(self, qset, perm, restrict_kwargs=None):
         """
