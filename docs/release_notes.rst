@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v2.1.3
+------
+* Update `filter_qset` to account for when a user might have access through a custom permission checker but no levels to filter on
+
 v2.1.2
 ------
 * When checking for permissions return early if the user has access

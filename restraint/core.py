@@ -35,7 +35,7 @@ def has_permission(user, user_permissions, permission, level):
     return (
         permission in user_permissions and level in user_permissions[permission]
         if level
-        else permission in user_permissions
+        else permission in user_permissions and len(user_permissions[permission])
     )
 
 
@@ -118,14 +118,22 @@ class Restraint(object):
         :type perm: string
         :param perm: The permission over which to do the filtering
         """
-        if not self.has_perm(perm):
+
+        # Check if any permission filters exist
+        # If none exist we know we can allow all
+        permission_filters = self.perms[perm].values()
+        allow_all = True if not len(permission_filters) or None in permission_filters else False
+        has_perm = self.has_perm(perm)
+
+        # The user does not have this permission for any level
+        if not has_perm:
             # if this restraint only protects a certain subset of the queryset, return the rest
             if restrict_kwargs is not None:
                 return qset.exclude(**restrict_kwargs)
             # else return nothing
             else:
                 return qset.none()
-        elif None in self.perms[perm].values():
+        elif has_perm and allow_all:
             # If any levels are none, return the full queryset
             return qset
         else:
