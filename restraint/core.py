@@ -77,6 +77,8 @@ class Restraint(object):
         Load and cache the permissions associated with the user
         """
         perm_set_names = self._config['perm_set_getter'](self._user)
+        # level = models.PermLevel.objects.get(perm__name='can_view_ga_metrics')
+        # print(level.permaccess_set.all())
         perm_levels = models.PermLevel.objects.filter(
             Q(permaccess__perm_set__name__in=perm_set_names) | Q(
                 permaccess__perm_user_id=self._user.id,
@@ -118,6 +120,13 @@ class Restraint(object):
         :type perm: string
         :param perm: The permission over which to do the filtering
         """
+
+        # Check if any permission filters exist
+        # If none exist we know we can allow all
+        permission_filters = self.perms[perm].values()
+        allow_all = True if not len(permission_filters) or None in permission_filters else False
+
+        # The user does not have this permission for any level
         if not self.has_perm(perm):
             # if this restraint only protects a certain subset of the queryset, return the rest
             if restrict_kwargs is not None:
@@ -125,7 +134,7 @@ class Restraint(object):
             # else return nothing
             else:
                 return qset.none()
-        elif None in self.perms[perm].values():
+        elif allow_all:
             # If any levels are none, return the full queryset
             return qset
         else:
