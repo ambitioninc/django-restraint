@@ -17,7 +17,9 @@ class PermSetManager(models.Manager):
                 PermSet(
                     name=name,
                     display_name=config.get('display_name', ''),
-                    is_private=True
+                    is_private=True,
+                    is_locked=config.get('locked', False),
+                    is_hidden=config.get('hidden', False)
                 )
                 for name, config in perm_sets.items()
             ],
@@ -25,7 +27,9 @@ class PermSetManager(models.Manager):
                 'name'
             ],
             update_fields=[
-                'display_name'
+                'display_name',
+                'is_locked',
+                'is_hidden'
             ]
         )
 
@@ -41,7 +45,9 @@ class PermManager(models.Manager):
             model_objs=[
                 Perm(
                     name=name,
-                    display_name=config.get('display_name', '')
+                    display_name=config.get('display_name', ''),
+                    is_locked=config.get('locked', False),
+                    is_hidden=config.get('hidden', False)
                 )
                 for name, config in perms.items()
             ],
@@ -49,7 +55,9 @@ class PermManager(models.Manager):
                 'name'
             ],
             update_fields=[
-                'display_name'
+                'display_name',
+                'is_locked',
+                'is_hidden'
             ],
             return_upserts_distinct=True
         )

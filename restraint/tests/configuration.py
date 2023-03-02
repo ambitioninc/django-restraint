@@ -32,6 +32,9 @@ def get_configuration():
             },
             'staff': {
                 'display_name': 'Staff'
+            },
+            'locked_and_hidden': {
+                'display_name': 'This is locked and hidden'
             }
         },
         'perms': {
@@ -59,6 +62,8 @@ def get_configuration():
             'can_access_users_named_foo': {
                 'display_name': 'Can Foo',
                 'levels': constants.BOOLEAN_LEVELS_CONFIG,
+                'locked': True,
+                'hidden': True
             }
         },
         'default_access': {

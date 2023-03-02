@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v2.2.0
+------
+* Added `restraint_db_updated` signal that is called when the restraint database is updated
+* Added `is_locked` and `is_hidden` fields to `Perm` and `PermSet`
+
 v2.1.3
 ------
 * Update `filter_qset` to account for when a user might have access through a custom permission checker but no levels to filter on

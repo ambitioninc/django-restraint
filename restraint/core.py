@@ -2,17 +2,20 @@ from collections import defaultdict
 from itertools import chain
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q
 from django.utils.functional import cached_property
 from django.utils.module_loading import import_string
 
 from restraint import models
+from restraint.signals import restraint_db_updated
 
 
 def get_restraint_config():
     return import_string(settings.RESTRAINT_CONFIGURATION)()
 
 
+@transaction.atomic
 def update_restraint_db(flush_default_access=False):
     """
     Updates the restraint db based on the restraint config.
@@ -23,6 +26,7 @@ def update_restraint_db(flush_default_access=False):
     updated_perms, new_perms = models.Perm.objects.sync_perms(config['perms'])
     models.PermLevel.objects.sync_perm_levels(config['perms'])
     models.PermAccess.objects.update_perm_set_access(config.get('default_access', {}), new_perms, flush_default_access)
+    restraint_db_updated.send(sender=None, config=config)
 
 
 def has_permission(user, user_permissions, permission, level):
