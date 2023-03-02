@@ -20,6 +20,8 @@ An example Restraint configuration is provided below. Details of the configurati
             'perm_sets': {
                 'super': {
                     'display_name': 'Super',
+                    'locked': True,
+                    'hidden': True
                 },
                 'individual': {
                     'display_name': 'Individual',
@@ -45,6 +47,7 @@ An example Restraint configuration is provided below. Details of the configurati
                             'id_filter': lambda a: User.objects.filter(is_superuser=True).values_list('id', flat=True),
                         },
                     },
+                    'locked': True
                 },
                 'can_view_stuff': {
                     'display_name': 'Can View Stuff',

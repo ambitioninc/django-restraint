@@ -299,6 +299,8 @@ class UpdateRestraintDbTest(TestCase):
                 },
                 'restricted': {
                     'display_name': 'Restricted',
+                    'locked': True,
+                    'hidden': True
                 },
             },
             'perms': {
@@ -318,6 +320,8 @@ class UpdateRestraintDbTest(TestCase):
                 'can_view_stuff': {
                     'display_name': 'Can View Stuff',
                     'levels': constants.BOOLEAN_LEVELS_CONFIG,
+                    'locked': True,
+                    'hidden': True
                 },
             },
             'default_access': {
@@ -364,6 +368,14 @@ class UpdateRestraintDbTest(TestCase):
             {'global', 'restricted'}
         )
         self.assertEquals(
+            set(PermSet.objects.filter(is_locked=True).values_list('name', flat=True)),
+            {'restricted'}
+        )
+        self.assertEquals(
+            set(PermSet.objects.filter(is_hidden=True).values_list('name', flat=True)),
+            {'restricted'}
+        )
+        self.assertEquals(
             set(PermSet.objects.all().values_list('name', flat=True)),
             {'global', 'restricted', 'custom'}
         )
@@ -371,6 +383,14 @@ class UpdateRestraintDbTest(TestCase):
         self.assertEquals(
             set(Perm.objects.values_list('name', flat=True)),
             {'can_view_stuff', 'can_edit_stuff', 'can_do_stuff', 'can_alter_stuff'}
+        )
+        self.assertEquals(
+            set(Perm.objects.filter(is_locked=True).values_list('name', flat=True)),
+            {'can_view_stuff'}
+        )
+        self.assertEquals(
+            set(Perm.objects.filter(is_hidden=True).values_list('name', flat=True)),
+            {'can_view_stuff'}
         )
 
         self.assertEquals(
