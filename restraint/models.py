@@ -1,12 +1,9 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from six import python_2_unicode_compatible
-
 from restraint.managers import PermSetManager, PermManager, PermLevelManager, PermAccessManager
 
 
-@python_2_unicode_compatible
 class PermSet(models.Model):
     """
     This is essentially a group that has a name.
