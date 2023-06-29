@@ -33,6 +33,10 @@ def configure_settings():
         else:
             raise RuntimeError('Unsupported test DB {0}'.format(test_db))
 
+        # Check env for db override (used for github actions)
+        if os.environ.get('DB_SETTINGS'):
+            db_config = json.loads(os.environ.get('DB_SETTINGS'))
+            
         settings.configure(
             TEST_RUNNER='django_nose.NoseTestSuiteRunner',
             NOSE_ARGS=['--nocapture', '--nologcapture', '--verbosity=1'],

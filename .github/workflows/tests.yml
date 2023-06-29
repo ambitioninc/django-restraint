@@ -61,7 +61,7 @@ jobs:
       env:
         DB_SETTINGS: >-
           {
-            "ENGINE":"django.db.backends.postgresql_psycopg2",
+            "ENGINE":"django.db.backends.postgresql",
             "NAME":"restraint",
             "USER":"postgres",
             "PASSWORD":"postgres",
