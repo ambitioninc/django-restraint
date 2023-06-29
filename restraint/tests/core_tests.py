@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import SimpleTestCase, TestCase
 from django_dynamic_fixture import G
 from unittest.mock import patch, Mock
-from unittest.mock.mock import PropertyMock
+from unittest.mock import PropertyMock
 
 from restraint import core, constants
 from restraint.models import PermSet, Perm, PermLevel, PermAccess

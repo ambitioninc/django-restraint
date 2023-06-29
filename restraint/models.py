@@ -31,7 +31,6 @@ class PermSet(models.Model):
         return f'{self.display_name}:{self.name}'
 
 
-@python_2_unicode_compatible
 class Perm(models.Model):
     """
     This is the actual permission name specific to what each app will add, for example competition_all.
@@ -56,7 +55,6 @@ class Perm(models.Model):
         return f'{self.display_name}:{self.name}'
 
 
-@python_2_unicode_compatible
 class PermLevel(models.Model):
     """
     Each specific Perm can have different levels of access for the same permission.
