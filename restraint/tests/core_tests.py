@@ -43,7 +43,7 @@ class TestRestraintLoadPerms(TestCase):
         user = G(User, is_superuser=True)
         restraints = core.Restraint(user)
         perms = restraints.perms
-        self.assertEquals(
+        self.assertEqual(
             perms,
             {
                 'can_edit_stuff': {
@@ -68,7 +68,7 @@ class TestRestraintLoadPerms(TestCase):
 
         r = core.Restraint(user)
         perms = r.perms
-        self.assertEquals(
+        self.assertEqual(
             perms,
             {
                 'can_edit_stuff': {
@@ -82,7 +82,7 @@ class TestRestraintLoadPerms(TestCase):
         user = G(User, is_superuser=True)
         restraints = core.Restraint(user, ['can_edit_stuff'])
         perms = restraints.perms
-        self.assertEquals(
+        self.assertEqual(
             perms,
             {
                 'can_edit_stuff': {
@@ -164,7 +164,7 @@ class TestRestraintFilterQSet(TestCase):
         r = core.Restraint(u)
 
         filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
-        self.assertEquals(set(filtered_qset), set([u, u2]))
+        self.assertEqual(set(filtered_qset), set([u, u2]))
 
     def test_filter_qset_local_access(self):
         # Make a user that is not a superuser
@@ -174,7 +174,7 @@ class TestRestraintFilterQSet(TestCase):
         r = core.Restraint(u)
 
         filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
-        self.assertEquals(set(filtered_qset), set([u]))
+        self.assertEqual(set(filtered_qset), set([u]))
 
     def test_filter_qset_multiple_local_access(self):
         # Make a user that is staff
@@ -186,7 +186,7 @@ class TestRestraintFilterQSet(TestCase):
         r = core.Restraint(u)
 
         filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
-        self.assertEquals(set(filtered_qset), set([u, u2]))
+        self.assertEqual(set(filtered_qset), set([u, u2]))
 
     def test_filter_qset_no_perms(self):
         # Make a user that is staff
@@ -195,7 +195,7 @@ class TestRestraintFilterQSet(TestCase):
         r = core.Restraint(u, ['bad_perm'])
 
         filtered_qset = r.filter_qset(User.objects.all(), 'can_edit_stuff')
-        self.assertEquals(set(filtered_qset), set([]))
+        self.assertEqual(set(filtered_qset), set([]))
 
     def test_filter_qset_restrict_subset(self):
         models = [
@@ -210,7 +210,7 @@ class TestRestraintFilterQSet(TestCase):
 
         filtered_qset = r.filter_qset(
             User.objects.all(), 'can_access_users_named_foo', restrict_kwargs={'first_name': 'foo'})
-        self.assertEquals(set(filtered_qset), set(models + [u]))
+        self.assertEqual(set(filtered_qset), set(models + [u]))
 
     def test_filter_qset_restrict_subset_no_perms(self):
         models = [
@@ -225,7 +225,7 @@ class TestRestraintFilterQSet(TestCase):
 
         filtered_qset = r.filter_qset(
             User.objects.all(), 'can_access_users_named_foo', restrict_kwargs={'first_name': 'foo'})
-        self.assertEquals(set(filtered_qset), set([models[1]] + [u]))
+        self.assertEqual(set(filtered_qset), set([models[1]] + [u]))
 
 
 class UpdateRestraintDbTest(TestCase):
@@ -363,37 +363,37 @@ class UpdateRestraintDbTest(TestCase):
         # update again
         core.update_restraint_db()
 
-        self.assertEquals(
+        self.assertEqual(
             set(PermSet.objects.filter(is_private=True).values_list('name', flat=True)),
             {'global', 'restricted'}
         )
-        self.assertEquals(
+        self.assertEqual(
             set(PermSet.objects.filter(is_locked=True).values_list('name', flat=True)),
             {'restricted'}
         )
-        self.assertEquals(
+        self.assertEqual(
             set(PermSet.objects.filter(is_hidden=True).values_list('name', flat=True)),
             {'restricted'}
         )
-        self.assertEquals(
+        self.assertEqual(
             set(PermSet.objects.all().values_list('name', flat=True)),
             {'global', 'restricted', 'custom'}
         )
 
-        self.assertEquals(
+        self.assertEqual(
             set(Perm.objects.values_list('name', flat=True)),
             {'can_view_stuff', 'can_edit_stuff', 'can_do_stuff', 'can_alter_stuff'}
         )
-        self.assertEquals(
+        self.assertEqual(
             set(Perm.objects.filter(is_locked=True).values_list('name', flat=True)),
             {'can_view_stuff'}
         )
-        self.assertEquals(
+        self.assertEqual(
             set(Perm.objects.filter(is_hidden=True).values_list('name', flat=True)),
             {'can_view_stuff'}
         )
 
-        self.assertEquals(
+        self.assertEqual(
             list(PermLevel.objects.order_by(
                 'perm__name',
                 'name'
@@ -411,7 +411,7 @@ class UpdateRestraintDbTest(TestCase):
             ]
         )
 
-        self.assertEquals(
+        self.assertEqual(
             list(
                 PermAccess.objects.order_by(
                     'perm_set__name',
@@ -516,21 +516,21 @@ class UpdateRestraintDbTest(TestCase):
         mock_get_restraint_config.return_value = config
         core.update_restraint_db(flush_default_access=True)
 
-        self.assertEquals(
+        self.assertEqual(
             set(PermSet.objects.filter(is_private=True).values_list('name', flat=True)),
             {'global', 'restricted'}
         )
-        self.assertEquals(
+        self.assertEqual(
             set(PermSet.objects.all().values_list('name', flat=True)),
             {'custom', 'global', 'restricted'}
         )
 
-        self.assertEquals(
+        self.assertEqual(
             set(Perm.objects.values_list('name', flat=True)),
             {'can_view_stuff', 'can_edit_stuff'}
         )
 
-        self.assertEquals(
+        self.assertEqual(
             list(PermLevel.objects.order_by(
                 'perm__name',
                 'name'
@@ -545,7 +545,7 @@ class UpdateRestraintDbTest(TestCase):
             ]
         )
 
-        self.assertEquals(
+        self.assertEqual(
             list(
                 PermAccess.objects.order_by(
                     'perm_set__name',
