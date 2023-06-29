@@ -37,7 +37,7 @@ class PermAccessTest(TestCase):
             levels=[permission_level.name]
         )
         pa = PermAccess.objects.get(perm_user_id=0, perm_user_type=None, perm_set=permission_set)
-        self.assertEquals(list(pa.perm_levels.all()), [permission_level])
+        self.assertEqual(list(pa.perm_levels.all()), [permission_level])
 
         # Set defaults to none
         PermAccess.objects.set_default(
@@ -45,7 +45,7 @@ class PermAccessTest(TestCase):
             permission_name='my_perm',
         )
         pa = PermAccess.objects.get(perm_user_id=0, perm_user_type=None, perm_set=permission_set)
-        self.assertEquals(list(pa.perm_levels.all()), [])
+        self.assertEqual(list(pa.perm_levels.all()), [])
 
     def test_add_individual_access_level_exists(self):
         """
@@ -58,7 +58,7 @@ class PermAccessTest(TestCase):
         PermAccess.objects.add_individual_access(u, 'my_perm', 'my_level')
 
         pa = PermAccess.objects.get(perm_user_id=u.id, perm_user_type=ContentType.objects.get_for_model(u))
-        self.assertEquals(list(pa.perm_levels.all()), [pl])
+        self.assertEqual(list(pa.perm_levels.all()), [pl])
 
     def test_remove_individual_access_level_exists(self):
         """
@@ -72,4 +72,4 @@ class PermAccessTest(TestCase):
         PermAccess.objects.remove_individual_access(u, 'my_perm', 'my_level')
 
         pa = PermAccess.objects.get(perm_user_id=u.id, perm_user_type=ContentType.objects.get_for_model(u))
-        self.assertEquals(list(pa.perm_levels.all()), [])
+        self.assertEqual(list(pa.perm_levels.all()), [])
