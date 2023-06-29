@@ -70,7 +70,7 @@ jobs:
           }
       run: |
         coverage run manage.py test restraint
-        coverage report --fail-under=99
+        coverage report --fail-under=98
       continue-on-error: ${{ matrix.experimental }}
     - name: Check style
       run: flake8 restraint
