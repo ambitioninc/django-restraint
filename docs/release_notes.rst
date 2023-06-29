@@ -3,9 +3,9 @@ Release Notes
 
 v2.3.0
 -------
-Django 3.2 & 4.0 support
-Django <3.2 dropped
-Switched testing to github actions
+* Django 3.2 & 4.0 support
+* Django <3.2 dropped
+* Switched testing to github actions
 
 v2.2.0
 ------
