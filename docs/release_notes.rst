@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+v2.3.0
+-------
+Django 3.2 & 4.0 support
+Django <3.2 dropped
+Switched testing to github actions
+
 v2.2.0
 ------
 * Added `restraint_db_updated` signal that is called when the restraint database is updated
