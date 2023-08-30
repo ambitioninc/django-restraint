@@ -3,4 +3,3 @@ coveralls
 django-nose
 django-dynamic-fixture
 flake8
-psycopg2
